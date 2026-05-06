@@ -1,0 +1,5 @@
+echo "INFO : *** DYNAMIC MEMORY FRAMEWORK ***"
+echo "INFO : Table ID = $table_file_id | Country = $country"
+echo "INFO : Table Size = ${size_gb} GB | Bucket = ${bucket}"
+echo "INFO : Executor Memory = ${executor_memory} | Driver Memory = ${driver_memory} | Executor Cores = ${executor_cores}"
+echo "INFO : *** END DYNAMIC MEMORY CONFIG ***"
