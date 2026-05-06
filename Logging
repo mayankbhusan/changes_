@@ -3,3 +3,9 @@ echo "INFO : Table ID = $table_file_id | Country = $country"
 echo "INFO : Table Size = ${size_gb} GB | Bucket = ${bucket}"
 echo "INFO : Executor Memory = ${executor_memory} | Driver Memory = ${driver_memory} | Executor Cores = ${executor_cores}"
 echo "INFO : *** END DYNAMIC MEMORY CONFIG ***"
+
+
+
+loginfo "Dynamic Memory Framework | TableID=${1} | Country=${2} | Bucket=${resolved_bucket} | ExecMem=${SPARK_EXEC_MEM} | DriverMem=${SPARK_DRIVER_MEM} | Overhead=${SPARK_EXEC_OVERHEAD} | Cores=${SPARK_EXEC_CORES} | NumExec=${SPARK_NUM_EXEC}"
+
+
