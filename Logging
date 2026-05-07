@@ -60,3 +60,7 @@ sed -n '44,50p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_
 
 sed -i '/echo.*SPARK_CONFIG/i ods_dashed=$(echo ${ods} | sed '"'"'s/\\(...\\)\\(..\\)\\(..\\)/\\1-\\2-\\3/'"'"')\nmain_log_file=$(ls ${FDP_DIR}/logs/ingestion/${ods_dashed}/*.log 2>/dev/null | grep -v "_Spark_" | head -1)' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
 grep -n "ods_dashed\|main_log_file\|SPARK_CONFIG" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+
+
+sed -i 's|>> ${main_log_file}|>> /tmp/dm_debug_3063.log|' \
+  /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
