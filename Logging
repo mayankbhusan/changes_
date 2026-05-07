@@ -9,3 +9,9 @@ echo "INFO : *** END DYNAMIC MEMORY CONFIG ***"
 loginfo "Dynamic Memory Framework | TableID=${1} | Country=${2} | Bucket=${resolved_bucket} | ExecMem=${SPARK_EXEC_MEM} | DriverMem=${SPARK_DRIVER_MEM} | Overhead=${SPARK_EXEC_OVERHEAD} | Cores=${SPARK_EXEC_CORES} | NumExec=${SPARK_NUM_EXEC}"
 
 
+
+
+echo "$(date '+%y/%m/%d %H:%M:%S') : INFO : ===== Dynamic Memory Framework ====="
+echo "$(date '+%y/%m/%d %H:%M:%S') : INFO : TableID=${1} | Country=${2} | Bucket=${resolved_bucket}"
+echo "$(date '+%y/%m/%d %H:%M:%S') : INFO : ExecMem=${SPARK_EXEC_MEM} | DriverMem=${SPARK_DRIVER_MEM} | Overhead=${SPARK_EXEC_OVERHEAD} | Cores=${SPARK_EXEC_CORES} | NumExec=${SPARK_NUM_EXEC}"
+echo "$(date '+%y/%m/%d %H:%M:%S') : INFO : ===== End Dynamic Memory Framework ====="
