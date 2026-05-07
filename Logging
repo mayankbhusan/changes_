@@ -64,3 +64,8 @@ grep -n "ods_dashed\|main_log_file\|SPARK_CONFIG" /CTRLFW/FDP/dev/ingestion/scri
 
 sed -i 's|>> ${main_log_file}|>> /tmp/dm_debug_3063.log|' \
   /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+
+sed -i 's|echo ".*INFO : Dynamic Memory.*>> /tmp/dm_debug_3063.log|echo "$(date '"'"'+%y/%m/%d %H:%M:%S'"'"') : INFO : Dynamic Memory \| TableID=${table_file_id} \| Country=${country} \| ExecMem=${SPARK_EXEC_MEM} \| DriverMem=${SPARK_DRIVER_MEM} \| Overhead=${SPARK_EXEC_OVERHEAD} \| Cores=${SPARK_EXEC_CORES} \| NumExec=${SPARK_NUM_EXEC}" >> /tmp/dm_debug_3063.log|' \
+  /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+grep -n "Dynamic Memory" \
+  /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
