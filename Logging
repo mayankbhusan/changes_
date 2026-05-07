@@ -33,3 +33,9 @@ sed -i '310a loginfo "Dynamic Memory | TableID=${table_id} | Country=${country} 
 sed -n '309,312p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
 
 
+sed -i '1a main_log_file=${log_file}' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+
+sed -i 's/>> ${log_file}/>> ${main_log_file}/' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+sed -i '311d' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
+
+
