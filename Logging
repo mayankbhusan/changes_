@@ -24,3 +24,6 @@ sed -i 's/^log_file=\(.*\)/log_file=\1\nexport log_file/' /CTRLFW/FDP/dev/ingest
 
 
 grep -n "log_file\|export log_file" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh | head -5
+
+
+sed -i 's/loginfo "Dynamic Memory/echo "$(date '"'"'+%y\/%m\/%d %H:%M:%S'"'"') : INFO : Dynamic Memory/' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
