@@ -46,3 +46,12 @@ sed -n '309,313p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_load
 sed -i 's/2>&1 >> ${main_log_file}/2>\&1 >> ${log_file}/' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
 
 
+
+---
+
+sed -i 's/main_log_file=${log_file}/main_log_file=${13:-${log_file}}/'  /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+sed -n '2p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+
+sed -i 's/${final_prev_date}$/${final_prev_date} "${log_file}"/' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
+grep -n "fdp_staging_spark_triggerer\|final_prev_date" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh | tail -5
+
