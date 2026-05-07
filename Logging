@@ -55,3 +55,5 @@ sed -n '2p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_trig
 sed -i 's/${final_prev_date}$/${final_prev_date} "${log_file}"/' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
 grep -n "fdp_staging_spark_triggerer\|final_prev_date" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh | tail -5
 
+sed -i '46a main_log_file=$(ls ${dir_logs}/*.log 2>/dev/null | grep -v "_Spark_" | head -1)' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+sed -n '44,50p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
