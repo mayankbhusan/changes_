@@ -39,3 +39,7 @@ sed -i 's/>> ${log_file}/>> ${main_log_file}/' /CTRLFW/FDP/dev/ingestion/scripts
 sed -i '311d' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
 
 
+sed -n '1,3p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+sed -n '82,85p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+sed -n '309,313p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
+
