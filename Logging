@@ -18,3 +18,9 @@ echo "$(date '+%y/%m/%d %H:%M:%S') : INFO : ===== End Dynamic Memory Framework =
 
 
 loginfo "Dynamic Memory | TableID=${table_file_id} | Country=${country} | SizeGB=${size_gb} | Bucket=${resolved_bucket} | ExecMem=${SPARK_EXEC_MEM} | DriverMem=${SPARK_DRIVER_MEM} | Overhead=${SPARK_EXEC_OVERHEAD} | Cores=${SPARK_EXEC_CORES} | NumExec=${SPARK_NUM_EXEC}"
+
+
+sed -i 's/^log_file=\(.*\)/log_file=\1\nexport log_file/' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
+
+
+grep -n "log_file\|export log_file" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh | head -5
