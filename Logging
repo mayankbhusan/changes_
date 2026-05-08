@@ -69,3 +69,8 @@ sed -i 's|echo ".*INFO : Dynamic Memory.*>> /tmp/dm_debug_3063.log|echo "$(date 
   /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
 grep -n "Dynamic Memory" \
   /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+
+
+grep "source.*loader_functions" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+grep "fdp_staging_spark_triggerer" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh | grep "sh \$"
+
