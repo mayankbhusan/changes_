@@ -74,3 +74,4 @@ grep -n "Dynamic Memory" \
 grep "source.*loader_functions" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
 grep "fdp_staging_spark_triggerer" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh | grep "sh \$"
 
+beeline -u "<url_from_above>" -e "INSERT INTO fdp_df_metadata_info_dev.table_size_registry VALUES ('3063', 'EBBS_RSKIND', 'ebbs_dev', 'ebbs_rskind', 'IN', 'LARGE', 60.0);"
