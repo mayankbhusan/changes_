@@ -1,0 +1,29 @@
+test run cmds:
+
+sh -x /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev 2>&1 | tee /CTRLFW/FDP/dev/logs/ingestion/table_size_tracker_test.log
+
+# 1. PREPROCESSING_DIR was created
+ls -la /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/
+
+# 2. COBS dates logged correctly (should show actual available dates, NOT consecutive month-ends)
+grep "COBS dates" /CTRLFW/FDP/dev/logs/ingestion/table_size_tracker_test.log
+
+# 3. cfg file populated
+grep "3063" /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+# 4. registry_data.csv written to PREPROCESSING_DIR (NOT /tmp)
+wc -l /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/registry_data.csv
+head -5 /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/registry_data.csv
+
+# 5. No unexpected /tmp output files (HDFS_SIZE_LOOKUP at /tmp is OK, outputs should NOT be there)
+ls /tmp/registry_data.csv 2>/dev/null && echo "BAD - still in /tmp" || echo "GOOD - not in /tmp"
+ls /tmp/child_lookup* 2>/dev/null && echo "BAD - still in /tmp" || echo "GOOD - not in /tmp"
+ls /tmp/cobs_size* 2>/dev/null && echo "BAD - still in /tmp" || echo "GOOD - not in /tmp"
+
+# 6. Hive load error log (check if empty = clean run)
+cat /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/hive_load_err.log
+
+sh -x /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh 20250630 dev 3063 N;
+
+# Check dynamic memory was picked up correctly for table 3063
+grep -i "spark_config\|bucket\|memory\|executor" /CTRLFW/FDP/dev/logs/ingestion/$(ls -t /CTRLFW/FDP/dev/logs/ingestion/ | head -1)
