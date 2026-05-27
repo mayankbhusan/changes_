@@ -1,0 +1,47 @@
+fix a:
+
+source ${FDP_DIR}/config/ingestion_config.env
+# ADD THESE 2 LINES:
+PREPROCESSING_DIR="${FDP_DIR}/ingestion/scripts/preprocessing"
+mkdir -p "${PREPROCESSING_DIR}"
+
+> ${PREPROCESSING_DIR}/registry_data.csv
+
+CHILD_LOOKUP="${PREPROCESSING_DIR}/child_lookup_${env}_$$.tmp"
+
+
+COBS_LOOKUP="${PREPROCESSING_DIR}/cobs_size_lookup_${env}.tmp"
+
+
+# NEW (uses hdfs_path from ingestion_config, rename to hdfs_table_path to avoid collision):
+hdfs_table_path="${hdfs_path}${brnz_tgt_table_schema}/${brnz_table_lower}_"
+
+STAGING_TABLE="${FDP_META_DB}.tmp_registry_load_stg"
+STAGING_HDFS="${hdfs_path}${FDP_META_DB}/tmp_registry_load_stg"
+REGISTRY_TABLE="${FDP_META_DB}.table_size_registry"
+
+
+2>>${PREPROCESSING_DIR}/hive_load_err.log
+
+
+hadoop fs -put -f ${PREPROCESSING_DIR}/registry_data.csv ${STAGING_HDFS}/registry_data.csv
+
+
+get_last_3_cobs_dates() {
+    if [ "${env}" = "prd" ]; then
+        # Production: compute last 3 consecutive month-end dates
+        local result=()
+        local y=$(date +%Y)
+        local m=$(date +%m)
+        for i in 1 2 3; do
+            m=$(( (10#$m - 1) ))
+            if [ $m -eq 0 ]; then m=12; y=$((y - 1)); fi
+            local last_day=$(date -d "${y}-$(printf '%02d' $m)-01 +1 month -1 day" +%Y-%m-%d)
+            result+=("$last_day")
+        done
+        echo "${result[@]}"
+    else
+        # Non-prod: get actual available run_dates from Hive registry
+        hive -e "SELECT DISTINCT run_date FROM ${REGISTRY_TABLE} ORDER BY run_date DESC LIMIT 3;" 2>/dev/null | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | tr '\n' ' '
+    fi
+}
