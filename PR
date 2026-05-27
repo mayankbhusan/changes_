@@ -41,7 +41,33 @@ get_last_3_cobs_dates() {
         done
         echo "${result[@]}"
     else
-        # Non-prod: get actual available run_dates from Hive registry
-        hive -e "SELECT DISTINCT run_date FROM ${REGISTRY_TABLE} ORDER BY run_date DESC LIMIT 3;" 2>/dev/null | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | tr '\n' ' '
+        # Non-prod: only use dates that actually have data in registry
+        hive -e "SELECT DISTINCT run_date FROM ${REGISTRY_TABLE} \
+                 ORDER BY run_date DESC LIMIT 3;" 2>/dev/null \
+        | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' \
+        | tr '\n' ' '
     fi
 }
+
+COBS_DATES=$(get_last_3_cobs_dates)
+
+
+if [ -n "${COBS_DATES}" ]; then
+    loginfo "Last 3 COBS dates: ${COBS_DATES}"
+
+    COBS_IN=$(echo "${COBS_DATES}" | tr ' ' '\n' \
+        | awk '{print "\x27"$0"\x27"}' | paste -sd',')
+
+    loginfo "Pre-fetching COBS size data for dates: ${COBS_DATES}..."
+    hive -e "
+    SELECT table_file_id, MAX(size_gb)
+    FROM ${REGISTRY_TABLE}
+    WHERE run_date IN (${COBS_IN})
+    GROUP BY table_file_id;" 2>/dev/null \
+    | grep -v "^$" | tr '\t' '|' > ${COBS_LOOKUP}
+
+    loginfo "COBS lookup ready: $(wc -l < ${COBS_LOOKUP}) tables"
+else
+    loginfo "No COBS data in registry for env=${env} — will use HDFS size fallback for all tables"
+    > ${COBS_LOOKUP}   # create empty file so downstream grep doesn't fail
+fi
