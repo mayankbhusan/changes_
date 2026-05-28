@@ -116,19 +116,21 @@ run_ts=$(date +'%Y-%m-%d %H:%M:%S')
 # !prd : query actual available run_dates from registry
 #         - avoids assuming consecutive month-ends that may not exist in non-prod
 #         - if registry is empty (first run), COBS_DATES is empty string
+# Note : uses string concatenation (not bash arrays) for sh compatibility
 get_last_3_cobs_dates() {
     if [ "${env}" = "prd" ]; then
         # Production: compute last 3 consecutive month-end dates
-        local result=()
-        local y=$(date +%Y)
-        local m=$(date +%m)
+        result=""
+        y=$(date +%Y)
+        m=$(date +%m)
         for i in 1 2 3; do
-            m=$(( (10#$m - 1) ))
+            m=$(( m - 1 ))
             if [ $m -eq 0 ]; then m=12; y=$((y - 1)); fi
-            local last_day=$(date -d "${y}-$(printf '%02d' $m)-01 +1 month -1 day" +%Y-%m-%d)
-            result+=("$last_day")
+            # printf ensures 2-digit month; avoids octal interpretation under sh
+            last_day=$(date -d "${y}-$(printf '%02d' $m)-01 +1 month -1 day" +%Y-%m-%d)
+            result="${result} ${last_day}"
         done
-        echo "${result[@]}"
+        echo "${result}"
     else
         # Non-prod: only use dates that actually have data in registry
         # Do NOT assume consecutive month-ends - query actual available partitions
@@ -192,6 +194,11 @@ else
     loginfo "No COBS data in registry for env=${env} - falling back to HDFS size for all tables"
     > ${COBS_LOOKUP}
 fi
+
+# Write parent_metadata rows (skip header) to temp file for sh-compatible while loop
+# Note: process substitution done < <(...) is bash-only; temp file works under sh
+PARENT_META_LOOP="${PREPROCESSING_DIR}/parent_meta_input.tmp"
+tail -n +2 "${PARENT_META}" > ${PARENT_META_LOOP}
 
 while IFS='|' read -r \
     table_file_id source country tp source_table_name \
@@ -292,7 +299,7 @@ while IFS='|' read -r \
     echo "${table_file_id}|${source_table_name}|${brnz_schema}|${brnz_table}|${hdfs_nas_path}|${source}|${tp}|${size_gb}|${country}|${bucket}|${run_date}|${run_ts}" >> ${PREPROCESSING_DIR}/registry_data.csv
 
     processed=$((processed + 1))
-done < <(tail -n +2 "${PARENT_META}")
+done < ${PARENT_META_LOOP}
 
 # loginfo "Loading data into Hive registry..."
 # timeout 300 hive 2>/dev/null <<EOF || true
@@ -365,4 +372,5 @@ EOF
 # Cleanup temp files
 rm -f ${CHILD_LOOKUP}
 rm -f ${COBS_LOOKUP}
+rm -f ${PARENT_META_LOOP}
 # rm -f ${PARENT_LOOKUP}
