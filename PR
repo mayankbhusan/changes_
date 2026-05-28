@@ -252,7 +252,8 @@ while IFS='|' read -r \
         loginfo "table_id=${table_file_id} | COBS size: ${cobs_size_gb}GB"
     else
         # Fallback: current HDFS size (first run before COBS data exists)
-        raw_bytes=$(grep -iF "/${brnz_tgt_table_schema}" \
+        # Match schema/table specifically to avoid picking first table in schema
+        raw_bytes=$(grep -iF "/${brnz_tgt_table_schema}/${brnz_table_lower}" \
             "${HDFS_SIZE_LOOKUP}" | head -1 | awk '{print $1}')
         loginfo "table_id=${table_file_id} | no COBS data, fallback to HDFS"
     fi
