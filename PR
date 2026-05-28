@@ -83,7 +83,7 @@ for child_file in ${METADATA_DIR}/*child_metadata.csv; do
     # f1=table_file_id | f2=brnz_src_table_schema | f3=brnz_src_table_name
     # Keep only FIRST occurrence per table_file_id (skip duplicate column rows)
     tail -n +2 "${child_file}" \
-        | awk -F'|' 'seen[$1]++ == 0 {print $1 "|" $2 "|" $3 "|" $11}' \
+        | awk -F'|' 'seen[$1]++ == 0 {print $1 "|" $2 "|" $3 "|" $11 "|" $12}' \
         >> ${CHILD_LOOKUP}
 done
 
@@ -223,12 +223,14 @@ while IFS='|' read -r \
     fi
     brnz_tgt_table_schema="${brnz_tgt_table_schema}_${env}"
     # brnz_table already correctly set from f3 above - CHILD_LOOKUP has 4 fields only, f12 = empty
-    brnz_table_lower=$(echo "${brnz_table}" | tr '[:upper:]' '[:lower:]')
+    # f5 of CHILD_LOOKUP = f12 of original child_metadata = target_table = HDFS directory name
+    brnz_table_lower=$(echo "${child_row}" | cut -d'|' -f5 | tr '[:upper:]' '[:lower:]')
 
     # - Skip rows with no HDFS path -
     #    if [ -z "${hdfs_nas_path}" ] || [ "${hdfs_nas_path}" = " " ]; then
     #    brnz_tgt_lower=$(echo "${brnz_tgt_table_schema}" | tr '[:upper:]' '[:lower:]')
     #    brnz_table_lower=$(echo "${brnz_table}" | tr '[:upper:]' '[:lower:]')
+    brnz_table_lower=$(echo "${child_row}" | cut -d'|' -f5 | tr '[:upper:]' '[:lower:]')
 
     #    if [ -z "${brnz_tgt_lower}" ] || [ -z "${brnz_table_lower}" ]; then
     #        echo "${table_file_id}|UNKNOWN|-1|${run_date}" >> ${TEMP_CFG}
