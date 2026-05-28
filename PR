@@ -222,7 +222,7 @@ while IFS='|' read -r \
         continue
     fi
     brnz_tgt_table_schema="${brnz_tgt_table_schema}_${env}"
-    brnz_table=$(echo "${child_row}" | cut -d'|' -f12)
+    # brnz_table already correctly set from f3 above - CHILD_LOOKUP has 4 fields only, f12 = empty
     brnz_table_lower=$(echo "${brnz_table}" | tr '[:upper:]' '[:lower:]')
 
     # - Skip rows with no HDFS path -
