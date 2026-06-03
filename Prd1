@@ -1,3 +1,14 @@
 hadoop fs -du /sit_enc/fdp/bank/hdata/fdp_prd1/*/ \
   2>/dev/null > /tmp/hdfs_size_lookup.txt
 echo "Lines: $(wc -l < /tmp/hdfs_size_lookup.txt)"
+
+
+# BEFORE (2 problems):
+HDFS_SIZE_LOOKUP="/tmp/hdfs_size_lookup.txt"        ← /tmp hardcoded
+loginfo "Using pre-built HDFS size lookup..."        ← manual prerequisite
+
+# AFTER (both fixed):
+HDFS_SIZE_LOOKUP="${PREPROCESSING_DIR}/hdfs_size_lookup.txt"   ← PREPROCESSING_DIR ✅
+loginfo "Building HDFS size lookup from ${hdfs_path}..."
+hadoop fs -du ${hdfs_path}*/ 2>/dev/null > ${HDFS_SIZE_LOOKUP} ← auto-built ✅
+loginfo "HDFS size lookup ready: $(wc -l < ${HDFS_SIZE_LOOKUP}) entries"
