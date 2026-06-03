@@ -1,0 +1,3 @@
+hadoop fs -du /sit_enc/fdp/bank/hdata/fdp_prd1/*/ \
+  2>/dev/null > /tmp/hdfs_size_lookup.txt
+echo "Lines: $(wc -l < /tmp/hdfs_size_lookup.txt)"
