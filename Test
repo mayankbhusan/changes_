@@ -10,3 +10,10 @@ awk -F'|' '!/^#/ && $3=="LARGE"  {print $1"|"$2"|"$3"|"$4; exit}' \
 
 awk -F'|' '!/^#/ && $3=="XL"     {print $1"|"$2"|"$3"|"$4; exit}' \
   /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+
+grep -rn "test_mayank" \
+  /CTRLFW/FDP/dev/ingestion/scripts/fdp_staging_loader_functions.sh \
+  /CTRLFW/FDP/dev/ingestion/scripts/fdp_staging_spark_triggerer.sh \
+  /CTRLFW/FDP/dev/ingestion/scripts/fdp_staging_loader.sh \
+  /CTRLFW/FDP/dev/ingestion/scripts/table_size_tracker.sh
