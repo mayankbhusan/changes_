@@ -28,3 +28,10 @@ grep -rl "Bucket=SMALL\|Bucket=MEDIUM\|Bucket=LARGE" \
   /CTRLFW/FDP/prd1/logs/ingestion/ \
   --include="*2026_06*" \
   2>/dev/null | head -5
+
+
+# Find any 3063 log in prd1 after June 2nd
+find /CTRLFW/FDP/prd1/logs/ingestion/ \
+  -name "*3063*" \
+  -newer /CTRLFW/FDP/prd1/ingestion/param/table_size_bucket.cfg \
+  2>/dev/null | head -5
