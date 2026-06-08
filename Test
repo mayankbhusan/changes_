@@ -1,0 +1,12 @@
+# Get one table_id example per bucket
+awk -F'|' '!/^#/ && $3=="SMALL"  {print $1"|"$2"|"$3"|"$4; exit}' \
+  /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+awk -F'|' '!/^#/ && $3=="MEDIUM" {print $1"|"$2"|"$3"|"$4; exit}' \
+  /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+awk -F'|' '!/^#/ && $3=="LARGE"  {print $1"|"$2"|"$3"|"$4; exit}' \
+  /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+awk -F'|' '!/^#/ && $3=="XL"     {print $1"|"$2"|"$3"|"$4; exit}' \
+  /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
