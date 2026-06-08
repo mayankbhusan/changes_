@@ -17,3 +17,14 @@ grep -rn "test_mayank" \
   /CTRLFW/FDP/dev/ingestion/scripts/fdp_staging_spark_triggerer.sh \
   /CTRLFW/FDP/dev/ingestion/scripts/fdp_staging_loader.sh \
   /CTRLFW/FDP/dev/ingestion/scripts/table_size_tracker.sh
+
+
+grep -rl "Bucket=SMALL\|Bucket=MEDIUM\|Bucket=LARGE\|Bucket=XL" \
+  /CTRLFW/FDP/prd1/logs/ingestion/2025-06-30/EBBS/ \
+  2>/dev/null | head -5
+
+
+grep -rl "Bucket=SMALL\|Bucket=MEDIUM\|Bucket=LARGE" \
+  /CTRLFW/FDP/prd1/logs/ingestion/ \
+  --include="*2026_06*" \
+  2>/dev/null | head -5
