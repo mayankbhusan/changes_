@@ -40,3 +40,14 @@ grep -rl "Bucket=LARGE" \
   /CTRLFW/FDP/prd1/logs/ingestion/ \
   --include="*2026_06*" 2>/dev/null | head -3
 
+# Current — fails for 7087_HK:
+child_row=$(grep "^${table_file_id}|" ${CHILD_LOOKUP} | head -1)
+
+# Fix — try full ID first, then strip suffix:
+child_row=$(grep "^${table_file_id}|" ${CHILD_LOOKUP} | head -1)
+if [ -z "${child_row}" ]; then
+    base_id=$(echo "${table_file_id}" | sed 's/_[A-Z]*$//')
+    child_row=$(grep "^${base_id}|" ${CHILD_LOOKUP} | head -1)
+fi
+
+
