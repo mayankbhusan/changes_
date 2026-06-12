@@ -51,3 +51,13 @@ if [ -z "${child_row}" ]; then
 fi
 
 
+
+child_row=$(grep "^${table_file_id}|" ${CHILD_LOOKUP} | head -1)
+if [ -z "${child_row}" ]; then
+    # Strip country suffix (2-3 uppercase letters only e.g. HK, SG, ALL)
+    base_id=$(echo "${table_file_id}" | sed 's/_[A-Z]\{2,3\}$//')
+    if [ "${base_id}" != "${table_file_id}" ]; then
+        child_row=$(grep "^${base_id}|" ${CHILD_LOOKUP} | head -1)
+    fi
+fi
+
