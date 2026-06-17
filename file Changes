@@ -1,0 +1,17 @@
+Files Changed (Modified)
+
+	1.	fdp_staging_spark_triggerer.sh
+	•	Added country_upper=${11} argument capture
+	•	Set spark.dynamicAllocation.enabled=false
+	2.	fdp_staging_loader.sh
+	•	Added call to get_spark_config_for_table() to fetch dynamic Spark params
+	•	Removed KAHT merge conflict
+	3.	fdp_staging_loader_functions.sh
+	•	Added get_spark_config_for_table() function with SMALL/MEDIUM/LARGE/XL bucket logic
+	4.	table_size_tracker.sh
+	•	Country suffix fallback fix (latest PR)
+	•	All other tracker logic (COBS sizing, HDFS lookup, cfg writing)
+
+New File Created
+
+	1.	table_size_tracker.sh — created from scratch as a new script
