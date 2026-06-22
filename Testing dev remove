@@ -1,0 +1,2 @@
+# Check what keys actually exist in the AMD-related file
+cat /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/acct_dependency_config.json | python3 -m json.tool | grep -A1 "AMD" | head -20
