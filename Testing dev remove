@@ -16,3 +16,8 @@ for f in os.listdir(path):
                 total += len(ok)
 print(f'Total inner keys in daily config: {total}')
 "
+
+
+grep -r "AMD_KR_AMD_KR_AMD_CUST_ACCSTATUS" /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/
+grep -r "AMD_CUST_ACCSTATUS" /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/
+
