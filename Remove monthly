@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""
+Story 14487026 - Remove monthly services from Daily DAG product config
+Author: Mayank Bhushan
+Usage:
+  Step 1 - Dry run (safe, no changes):
+    python3 remove_monthly_services.py --dry-run
+
+  Step 2 - Actual run (makes changes):
+    python3 remove_monthly_services.py
+"""
+
+import json
+import os
+import shutil
+import argparse
+from pathlib import Path
+from datetime import datetime
+
+# ─── CONFIGURE THESE PATHS FOR DEV ───────────────────────────────────────────
+SERVICES_LIST_FILE  = "monthly_services_to_remove.txt"   # your 642-line txt file
+DAILY_CONFIG_DIR    = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/"
+BACKUP_DIR          = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product_backup_14487026/"
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def load_monthly_services(filepath):
+    """Load the 642 monthly service names into a set."""
+    if not os.path.exists(filepath):
+        raise FileNotFoundError(f"Services list not found: {filepath}")
+    with open(filepath, 'r') as f:
+        services = set(line.strip() for line in f if line.strip())
+    print(f"[INFO] Loaded {len(services)} monthly services from {filepath}")
+    return services
+
+
+def backup_file(src_path, backup_dir):
+    """Create a timestamped backup of a file before modifying it."""
+    os.makedirs(backup_dir, exist_ok=True)
+    filename = os.path.basename(src_path)
+    backup_path = os.path.join(backup_dir, filename)
+    shutil.copy2(src_path, backup_path)
+    return backup_path
+
+
+def process_json_file(filepath, monthly_services, dry_run=True):
+    """
+    Opens one daily config JSON, removes inner keys matching monthly_services.
+    Returns list of removed service names.
+    """
+    with open(filepath, 'r', encoding='utf-8') as f:
+        try:
+            config = json.load(f)
+        except json.JSONDecodeError as e:
+            print(f"[WARN] Skipping {filepath} - invalid JSON: {e}")
+            return []
+
+    removed = []
+
+    # Each file has one outer key (product group), with inner keys (services)
+    for outer_key in list(config.keys()):
+        product_group = config[outer_key]
+        if not isinstance(product_group, dict):
+            continue
+        for service_name in list(product_group.keys()):
+            if service_name in monthly_services:
+                removed.append(service_name)
+                if not dry_run:
+                    del product_group[service_name]
+
+    # Save back only if something was removed and not a dry run
+    if removed and not dry_run:
+        backup_file(filepath, BACKUP_DIR)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4)
+        print(f"[MODIFIED] {os.path.basename(filepath)} — removed {len(removed)} service(s)")
+    elif removed and dry_run:
+        print(f"[DRY-RUN]  {os.path.basename(filepath)} — would remove {len(removed)} service(s):")
+        for svc in removed:
+            print(f"             - {svc}")
+
+    return removed
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Remove monthly services from daily DAG configs")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Preview changes without modifying any files")
+    args = parser.parse_args()
+
+    dry_run = args.dry_run
+    mode = "DRY-RUN (no files will be changed)" if dry_run else "LIVE (files WILL be modified)"
+    print(f"\n{'='*60}")
+    print(f"  Story 14487026 - Monthly Service Removal Script")
+    print(f"  Mode: {mode}")
+    print(f"  Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"{'='*60}\n")
+
+    # Load monthly services list
+    monthly_services = load_monthly_services(SERVICES_LIST_FILE)
+
+    # Validate daily config dir
+    if not os.path.isdir(DAILY_CONFIG_DIR):
+        print(f"[ERROR] Daily config directory not found: {DAILY_CONFIG_DIR}")
+        return
+
+    json_files = sorted(Path(DAILY_CONFIG_DIR).glob("*.json"))
+    print(f"[INFO] Found {len(json_files)} JSON files in daily config folder\n")
+
+    total_removed  = 0
+    files_modified = 0
+    all_removed    = []
+
+    for json_file in json_files:
+        removed = process_json_file(str(json_file), monthly_services, dry_run=dry_run)
+        if removed:
+            files_modified += 1
+            total_removed  += len(removed)
+            all_removed.extend(removed)
+
+    # ── Summary ──────────────────────────────────────────────────────────────
+    print(f"\n{'='*60}")
+    print(f"  SUMMARY")
+    print(f"{'='*60}")
+    print(f"  Total services {'to remove' if dry_run else 'removed'} : {total_removed}")
+    print(f"  Files {'to be modified' if dry_run else 'modified'}         : {files_modified}")
+    print(f"  Services in input list       : {len(monthly_services)}")
+
+    not_found = monthly_services - set(all_removed)
+    if not_found:
+        print(f"\n[WARN] {len(not_found)} services from list NOT found in any daily config:")
+        for svc in sorted(not_found):
+            print(f"         - {svc}")
+
+    if not dry_run:
+        print(f"\n[INFO] Backups saved to: {BACKUP_DIR}")
+
+    print(f"\n{'='*60}\n")
+
+
+if __name__ == "__main__":
+    main()
