@@ -21,3 +21,37 @@ print(f'Total inner keys in daily config: {total}')
 grep -r "AMD_KR_AMD_KR_AMD_CUST_ACCSTATUS" /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/
 grep -r "AMD_CUST_ACCSTATUS" /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/
 
+
+python3 -c "
+import json, os
+
+path = '/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/'
+
+# Get ALL inner keys from daily config
+daily_keys = set()
+for f in os.listdir(path):
+    if f.endswith('.json') and 'backup' not in f:
+        with open(os.path.join(path,f)) as fp:
+            data = json.load(fp)
+        for v in data.values():
+            if isinstance(v, dict):
+                daily_keys.update(v.keys())
+
+# Load Excel list
+with open('monthly_services_to_remove.txt') as f:
+    monthly = set(line.strip() for line in f if line.strip())
+
+found     = monthly & daily_keys
+not_found = monthly - daily_keys
+
+print('='*55)
+print('  DAILY CONFIG - CURRENT STATE ANALYSIS')
+print('='*55)
+print(f'  Total services in daily config today : {len(daily_keys)}')
+print(f'  Services in Excel Y/Y list           : {len(monthly)}')
+print(f'  Found in daily config                : {len(found)}')
+print(f'  NOT found in daily config            : {len(not_found)}')
+print(f'  Conclusion: Only {len(found)} need removal')
+print('='*55)
+"
+
