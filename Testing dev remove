@@ -1,2 +1,18 @@
 # Check what keys actually exist in the AMD-related file
 cat /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/acct_dependency_config.json | python3 -m json.tool | grep -A1 "AMD" | head -20
+
+
+# Total inner keys in daily config right now
+python3 -c "
+import json, os
+path = '/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/'
+total = 0
+for f in os.listdir(path):
+    if f.endswith('.json') and 'backup' not in f:
+        with open(os.path.join(path,f)) as fp:
+            data = json.load(fp)
+        for ok in data.values():
+            if isinstance(ok, dict):
+                total += len(ok)
+print(f'Total inner keys in daily config: {total}')
+"
