@@ -4,10 +4,12 @@ Story 14487026 - Remove monthly services from Daily DAG product config
 Author: Mayank Bhushan
 Usage:
   Step 1 - Dry run (safe, no changes):
-    python3 remove_monthly_services.py --dry-run
+    python3 remove_monthly_services.py --env dev --dry-run
+    python3 remove_monthly_services.py --env prd1 --dry-run
 
   Step 2 - Actual run (makes changes):
-    python3 remove_monthly_services.py
+    python3 remove_monthly_services.py --env dev
+    python3 remove_monthly_services.py --env prd1
 """
 
 import json
@@ -17,10 +19,20 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-# —— CONFIGURE THESE PATHS FOR DEV ——
-SERVICES_LIST_FILE = "/CTRLFW/FDP/dev/scripts/monthly_services_to_remove.txt"
-DAILY_CONFIG_DIR   = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/"
-BACKUP_DIR         = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product_backup_14487026/"
+# —— ENVIRONMENT CONFIG ——
+ENV_ROOTS = {
+    "dev":  "/CTRLFW/FDP/dev",
+    "prd1": "/CTRLFW/FDP/prd1"
+}
+
+def get_paths(env):
+    """Derive all paths from the target environment root."""
+    root = ENV_ROOTS[env]
+    return {
+        "services_list": f"{root}/scripts/monthly_services_to_remove.txt",
+        "config_dir":    f"{root}/tools/executables/airflow_home/dag_config/product/",
+        "backup_dir":    f"{root}/tools/executables/airflow_home/dag_config/product_backup_14487026/"
+    }
 
 
 def load_monthly_services(filepath):
@@ -84,27 +96,36 @@ def process_json_file(filepath, monthly_services, dry_run=True):
 
 def main():
     parser = argparse.ArgumentParser(description="Remove monthly services from daily DAG configs")
+    parser.add_argument("--env", required=True, choices=["dev", "prd1"],
+                        help="Target environment: dev or prd1")
     parser.add_argument("--dry-run", action="store_true",
                         help="Preview changes without modifying any files")
     args = parser.parse_args()
 
     dry_run = args.dry_run
+    paths   = get_paths(args.env)
+
+    # Make BACKUP_DIR accessible inside process_json_file
+    global BACKUP_DIR
+    BACKUP_DIR = paths["backup_dir"]
+
     mode = "DRY-RUN (no files will be changed)" if dry_run else "LIVE (files WILL be modified)"
     print(f"\n{'='*60}")
     print(f"  Story 14487026 - Monthly Service Removal Script")
-    print(f"  Mode: {mode}")
-    print(f"  Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"  Environment : {args.env.upper()}")
+    print(f"  Mode        : {mode}")
+    print(f"  Time        : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'='*60}\n")
 
     # Load monthly services list
-    monthly_services = load_monthly_services(SERVICES_LIST_FILE)
+    monthly_services = load_monthly_services(paths["services_list"])
 
     # Validate daily config dir
-    if not os.path.isdir(DAILY_CONFIG_DIR):
-        print(f"[ERROR] Daily config directory not found: {DAILY_CONFIG_DIR}")
+    if not os.path.isdir(paths["config_dir"]):
+        print(f"[ERROR] Daily config directory not found: {paths['config_dir']}")
         return
 
-    json_files = sorted(Path(DAILY_CONFIG_DIR).glob("*.json"))
+    json_files = sorted(Path(paths["config_dir"]).glob("*.json"))
     print(f"[INFO] Found {len(json_files)} JSON files in daily config folder\n")
 
     total_removed  = 0
@@ -122,6 +143,7 @@ def main():
     print(f"\n{'='*60}")
     print(f"  SUMMARY")
     print(f"{'='*60}")
+    print(f"  Environment                                             : {args.env.upper()}")
     print(f"  Total services {'to remove' if dry_run else 'removed'}  : {total_removed}")
     print(f"  Files {'to be modified' if dry_run else 'modified'}     : {files_modified}")
     print(f"  Services in input list                                  : {len(monthly_services)}")
@@ -133,7 +155,7 @@ def main():
             print(f"       - {svc}")
 
     if not dry_run:
-        print(f"\n[INFO] Backups saved to: {BACKUP_DIR}")
+        print(f"\n[INFO] Backups saved to: {paths['backup_dir']}")
 
     print(f"\n{'='*60}\n")
 
