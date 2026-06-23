@@ -55,3 +55,7 @@ print(f'  Conclusion: Only {len(found)} need removal')
 print('='*55)
 "
 
+
+
+cat /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/ccr_cltrl_dependency_config.json
+
