@@ -17,15 +17,14 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-# ─── CONFIGURE THESE PATHS FOR DEV ───────────────────────────────────────────
-SERVICES_LIST_FILE  = "monthly_services_to_remove.txt"   # your 642-line txt file
-DAILY_CONFIG_DIR    = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/"
-BACKUP_DIR          = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product_backup_14487026/"
-# ─────────────────────────────────────────────────────────────────────────────
+# —— CONFIGURE THESE PATHS FOR DEV ——
+SERVICES_LIST_FILE = "/CTRLFW/FDP/dev/scripts/monthly_services_to_remove.txt"
+DAILY_CONFIG_DIR   = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/"
+BACKUP_DIR         = "/CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product_backup_14487026/"
 
 
 def load_monthly_services(filepath):
-    """Load the 642 monthly service names into a set."""
+    """Load the 76 monthly service names into a set."""
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"Services list not found: {filepath}")
     with open(filepath, 'r') as f:
@@ -38,7 +37,8 @@ def backup_file(src_path, backup_dir):
     """Create a timestamped backup of a file before modifying it."""
     os.makedirs(backup_dir, exist_ok=True)
     filename = os.path.basename(src_path)
-    backup_path = os.path.join(backup_dir, filename)
+    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_path = os.path.join(backup_dir, f"{filename}.{ts}.bak")
     shutil.copy2(src_path, backup_path)
     return backup_path
 
@@ -73,11 +73,11 @@ def process_json_file(filepath, monthly_services, dry_run=True):
         backup_file(filepath, BACKUP_DIR)
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=4)
-        print(f"[MODIFIED] {os.path.basename(filepath)} — removed {len(removed)} service(s)")
+        print(f"[MODIFIED] {os.path.basename(filepath)} - removed {len(removed)} service(s)")
     elif removed and dry_run:
-        print(f"[DRY-RUN]  {os.path.basename(filepath)} — would remove {len(removed)} service(s):")
+        print(f"[DRY-RUN] {os.path.basename(filepath)} - would remove {len(removed)} service(s):")
         for svc in removed:
-            print(f"             - {svc}")
+            print(f"          - {svc}")
 
     return removed
 
@@ -118,19 +118,19 @@ def main():
             total_removed  += len(removed)
             all_removed.extend(removed)
 
-    # ── Summary ──────────────────────────────────────────────────────────────
+    # —— Summary ——
     print(f"\n{'='*60}")
     print(f"  SUMMARY")
     print(f"{'='*60}")
-    print(f"  Total services {'to remove' if dry_run else 'removed'} : {total_removed}")
-    print(f"  Files {'to be modified' if dry_run else 'modified'}         : {files_modified}")
-    print(f"  Services in input list       : {len(monthly_services)}")
+    print(f"  Total services {'to remove' if dry_run else 'removed'}  : {total_removed}")
+    print(f"  Files {'to be modified' if dry_run else 'modified'}     : {files_modified}")
+    print(f"  Services in input list                                  : {len(monthly_services)}")
 
     not_found = monthly_services - set(all_removed)
     if not_found:
         print(f"\n[WARN] {len(not_found)} services from list NOT found in any daily config:")
         for svc in sorted(not_found):
-            print(f"         - {svc}")
+            print(f"       - {svc}")
 
     if not dry_run:
         print(f"\n[INFO] Backups saved to: {BACKUP_DIR}")
