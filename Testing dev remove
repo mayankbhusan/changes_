@@ -59,3 +59,11 @@ print('='*55)
 
 cat /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/ccr_cltrl_dependency_config.json
 
+
+cd /CTRLFW/FDP/dev/tools/executables/airflow_home/dag_config/product/
+
+# Check if any of the 76 removed service names appear as dependencies in other files
+for service in $(cat /CTRLFW/FDP/dev/scripts/monthly_services_to_remove.txt); do
+    grep -rl "\"$service\"" *.json
+done | sort | uniq
+
