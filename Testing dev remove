@@ -150,3 +150,5 @@ Confirm only that one dependency got added and nothing else in the file changed.
 4. Cross-check the total against the report — should equal 3155:
 grep -oP 'added_dep_count=\K[0-9]+' patch_monthly_file_modification_details.txt | paste -sd+ | bc
 5. Confirm the 17 already-matched services were left alone — none of them should appear in patch_monthly_file_modification_details.txt, since they didn't need changes.
+
+awk -F'added_dep_count=' '/added_dep_count=/{split($2,a,"|"); gsub(/[ \t\r]/,"",a[1]); sum+=a[1]; n++} END{print "lines matched:", n; print "total:", sum}' patch_monthly_file_modification_details.txt
