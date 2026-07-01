@@ -1,0 +1,5 @@
+INSERT OVERWRITE TABLE ${REGISTRY_TABLE}
+SELECT table_file_id, source_table_name, brnz_src_schema, brnz_src_table,
+       hdfs_path, source, tp, CAST(size_gb AS FLOAT),
+       bucket, run_date, CAST(last_updated AS TIMESTAMP), country
+FROM ${STAGING_TABLE};
