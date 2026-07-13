@@ -1,11 +1,13 @@
-for tbl_path in $(hadoop fs -du /prd_enc/fdp/bank/hdata/fdp_prd/fdp_ccms_all_sri_open_prd/*/ | awk '{print $NF}'); do
+hadoop fs -du /prd_enc/fdp/bank/hdata/fdp_prd/fdp_ccms_all_sri_open_prd/*/ | while read -r line; do
+  base_size=$(echo "$line" | awk '{print $1}')
+  tbl_path=$(echo "$line" | awk '{print $NF}')
   for cob in 2026-06-30 2026-05-31 2026-04-30; do
     part="${tbl_path}/ods=${cob}"
     if hadoop fs -test -e "${part}" 2>/dev/null; then
-      size=$(hadoop fs -du -s "${part}" 2>/dev/null | awk '{print $1}')
-      echo "${tbl_path}|${cob}|${size:-0}"
+      cob_size=$(hadoop fs -du -s "${part}" 2>/dev/null | awk '{print $1}')
+      echo "${tbl_path}|${cob}|cob_bytes=${cob_size:-0}|base_path_bytes=${base_size}"
     else
-      echo "${tbl_path}|${cob}|NOT_FOUND"
+      echo "${tbl_path}|${cob}|NOT_FOUND|base_path_bytes=${base_size}"
     fi
   done
 done
