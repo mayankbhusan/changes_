@@ -9,3 +9,10 @@ for tbl_path in $(hadoop fs -du /prd_enc/fdp/bank/hdata/fdp_prd/fdp_ccms_all_sri
     fi
   done
 done
+
+
+Also need:
+
+Latest mfu_memory_settings.csv from data/mfu/incoming/
+SELECT DISTINCT run_date FROM table_size_registry — confirms whether history's actually getting wiped
+A current dump of table_size_bucket.cfg — want to check if other tables besides cps101c are mis-bucketed too
