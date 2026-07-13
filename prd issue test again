@@ -15,4 +15,4 @@ Also need:
 
 Latest mfu_memory_settings.csv from data/mfu/incoming/
 SELECT DISTINCT run_date FROM table_size_registry — confirms whether history's actually getting wiped
-A current dump of table_size_bucket.cfg — want to check if other tables besides cps101c are mis-bucketed too
+A current dump of table_size_bucket.cfg — want to check if other tables are mis-bucketed too
