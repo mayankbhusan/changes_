@@ -1,0 +1,1 @@
+hadoop fs -du -s $(grep hdfs_path /CTRLFW/FDP/prd1/config/ingestion_config.env | cut -d'"' -f2)fdp_ccms_all_sri_open_prd/ccms_my_cps101c/ods=<pick a date that exists in prd1>
