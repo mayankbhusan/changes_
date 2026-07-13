@@ -1,1 +1,11 @@
-hadoop fs -du -s $(grep hdfs_path /CTRLFW/FDP/prd1/config/ingestion_config.env | cut -d'"' -f2)fdp_ccms_all_sri_open_prd/ccms_my_cps101c/ods=<pick a date that exists in prd1>
+for tbl_path in $(hadoop fs -du /prd_enc/fdp/bank/hdata/fdp_prd/fdp_ccms_all_sri_open_prd/*/ | awk '{print $NF}'); do
+  for cob in 2026-06-30 2026-05-31 2026-04-30; do
+    part="${tbl_path}/ods=${cob}"
+    if hadoop fs -test -e "${part}" 2>/dev/null; then
+      size=$(hadoop fs -du -s "${part}" 2>/dev/null | awk '{print $1}')
+      echo "${tbl_path}|${cob}|${size:-0}"
+    else
+      echo "${tbl_path}|${cob}|NOT_FOUND"
+    fi
+  done
+done
