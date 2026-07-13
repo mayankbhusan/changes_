@@ -32,3 +32,27 @@ Select-String -Path .\table_size_tracker.log -Pattern "Last 3 COBS dates|TABLE S
 Get-Content .\mfu_memory_settings.csv -TotalCount 5
 
 Select-String -Path .\mfu_memory_settings.csv -Pattern "^1309,"
+
+
+===========
+
+# 1) Does 1309 show up ANYWHERE in bucket.cfg, even off the exact position we searched?
+Select-String -Path .\table_size_bucket.cfg -Pattern "1309"
+
+# 2) What actually generated table_size_tracker.log — check the real start and end
+Get-Content .\table_size_tracker.log -TotalCount 20
+Get-Content .\table_size_tracker.log -Tail 20
+
+# 3) Confirm the path-construction bug is systematic (every row) vs isolated to cps101c
+(Select-String -Path .\table_size_tracker.log -Pattern "NOT_FOUND").Count
+(Select-String -Path .\table_size_tracker.log -Pattern "cob_bytes=[1-9]").Count
+
+# 4) Mine every table's real whole-path size out of the log for free — not just the 2 we've looked at
+Select-String -Path .\table_size_tracker.log -Pattern '^\d+ (/prd_enc\S+)\|2026-06-30\|\w+\|base_path_bytes=(\d+)$' | ForEach-Object {
+  $g = $_.Matches[0].Groups
+  "$($g[1].Value)|$($g[2].Value)"
+} | Sort-Object -Unique
+
+# 5) Scope of the MFU file, and whether any other ccms tables have overrides
+(Get-Content .\mfu_memory_settings.csv).Count
+Select-String -Path .\mfu_memory_settings.csv -Pattern "ccms|cps101|1309" -CaseSensitive:$false
