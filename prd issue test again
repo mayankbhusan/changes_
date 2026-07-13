@@ -18,3 +18,17 @@ Also need:
 Latest mfu_memory_settings.csv from data/mfu/incoming/
 SELECT DISTINCT run_date FROM table_size_registry — confirms whether history's actually getting wiped
 A current dump of table_size_bucket.cfg — want to check if other tables are mis-bucketed too
+
+
+Get-Content .\table_size_bucket.cfg | ForEach-Object { ($_ -split '\|')[2] } | Group-Object | Sort-Object Count -Descending
+
+(Select-String -Path .\table_size_tracker.log -Pattern "COBS size").Count
+(Select-String -Path .\table_size_tracker.log -Pattern "fallback to HDFS").Count
+
+Select-String -Path .\table_size_tracker.log -Pattern "cps101c"
+
+Select-String -Path .\table_size_tracker.log -Pattern "Last 3 COBS dates|TABLE SIZE TRACKER COMPLETE|Processed|Failed probes"
+
+Get-Content .\mfu_memory_settings.csv -TotalCount 5
+
+Select-String -Path .\mfu_memory_settings.csv -Pattern "^1309,"
