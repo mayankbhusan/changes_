@@ -412,3 +412,14 @@ else:
     for i in matches:
         print(f"  line {i+1}: {lines[i]!r}")
 PYEOF
+
+
+echo "=== verify new parse line ==="
+grep -n "COBS_LOOKUP}" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== test it against the real captured data ==="
+grep -E "^\| " /tmp/cobs_raw_test.txt | grep -v "table_file_id" | sed 's/^| *//;s/ *|$//' | sed 's/ *| */|/g'
+
+
+FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_run.log 2>&1 &
+echo "Started PID: $!"
