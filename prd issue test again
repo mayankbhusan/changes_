@@ -197,7 +197,7 @@ SELECT '2229','ACBS_DSA_SLPD_BT_SRI_XX','fdp_df_acbs_sri_open_dev','ACBS_DSA_SLP
 echo "---VERIFY SEED ROWS---"
 hive -e "SELECT table_file_id, country, size_gb, bucket, run_date FROM fdp_metadata_info_dev.table_size_registry ORDER BY run_date;" 2>/dev/null
 
-
+hive -e "SELECT table_file_id, country, size_gb, bucket, run_date FROM fdp_metadata_info_dev.table_size_registry WHERE run_date IN ('2026-04-30','2026-05-31','2026-06-30');"
 
 
 grep -n "brnz_schema=\|brnz_table=" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
