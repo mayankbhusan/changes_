@@ -154,6 +154,7 @@ INSERT INTO fdp_metadata_info_dev.table_size_registry PARTITION (run_date='2026-
 SELECT '2229','ACBS_DSA_SLPD_BT_SRI_XX','fdp_df_acbs_sri_open_dev','ACBS_DSA_SLPD_BT_SRI_XX','/sit_enc/fdp/bank/hdata/fdp_dev/fdp_df_acbs_sri_open_dev/acbs_dsa_slpd_bt_sri_xx','EDM T1','ACBS',CAST(1.1 AS FLOAT),'SMALL',CAST('2026-04-30 10:00:00' AS TIMESTAMP),'HK';
 "
 
+grep -n "brnz_schema=\|brnz_table=" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
 grep "Last 3 COBS dates" /tmp/tracker_final2.log
 grep "table_id=2229" /tmp/tracker_final2.log
