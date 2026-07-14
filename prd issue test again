@@ -479,3 +479,6 @@ grep -n "INSERT OVERWRITE\|LOAD DATA\|rows affected\|FAILED\|Error\|Exception" /
 
 
 grep -n "STAGING_TABLE=\|CREATE TABLE.*STAGING_TABLE\|INSERT OVERWRITE TABLE.*REGISTRY_TABLE\|INSERT INTO.*REGISTRY_TABLE" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+
+sed -n '320,362p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
