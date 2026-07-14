@@ -275,3 +275,18 @@ FORCE_PRD_COBS_LOGIC=1 sh -c 'echo "BEFORE: FORCE=${FORCE_PRD_COBS_LOGIC:-UNSET}
 
 echo "=== ~/.bashrc content ==="
 cat ~/.bashrc
+
+
+FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_debug.log 2>&1 &
+PID=$!
+echo "Started PID: $PID"
+for i in $(seq 1 15); do
+  if grep -q "Last 3 COBS dates" /tmp/tracker_debug.log 2>/dev/null; then
+    echo "FOUND after $((i*2))s:"
+    grep "Last 3 COBS dates" /tmp/tracker_debug.log
+    kill $PID 2>/dev/null
+    break
+  fi
+  sleep 2
+done
+cat /tmp/tracker_debug.log
