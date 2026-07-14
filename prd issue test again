@@ -604,3 +604,8 @@ else:
         f.write(content)
     print("DONE: now sourcing the test_mayank functions file.")
 PYEOF
+
+
+sed -n '1235,1250p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader_functions.sh
+
+grep -n "FILE_NAS_PATH=" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/*.sh
