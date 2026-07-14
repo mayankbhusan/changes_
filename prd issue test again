@@ -178,7 +178,10 @@ TBLPROPERTIES ('transactional'='false');
 echo "---VERIFY---"
 hive -e "SHOW CREATE TABLE fdp_metadata_info_dev.table_size_registry;" 2>/dev/null
 
-
+echo "---PARTITIONS---"
+hive -e "SHOW PARTITIONS fdp_metadata_info_dev.table_size_registry;"
+echo "---SELECT---"
+hive -e "SELECT table_file_id, country, size_gb, bucket, run_date FROM fdp_metadata_info_dev.table_size_registry ORDER BY run_date;"
 
 hive -e "
 INSERT INTO TABLE fdp_metadata_info_dev.table_size_registry PARTITION (run_date='2026-06-30')
