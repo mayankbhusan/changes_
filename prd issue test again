@@ -568,3 +568,15 @@ find / -path "*/data/mfu/incoming/mfu_memory_settings*.csv" 2>/dev/null -exec sh
 
 echo "=== Usage patterns across test_mayank scripts ==="
 grep -n -A2 "Usage" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/*.sh
+
+
+
+source ~/.bashrc 2>/dev/null
+echo "BASE_NAS_PATH=${BASE_NAS_PATH}"
+
+echo "=== MFU csv ==="
+ls -la ${BASE_NAS_PATH}/dev/data/mfu/incoming/ 2>&1
+cat ${BASE_NAS_PATH}/dev/data/mfu/incoming/mfu_memory_settings*.csv 2>&1
+
+echo "=== how fdp_staging_loader.sh actually calls the triggerer ==="
+grep -n -B2 -A3 "triggerer" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
