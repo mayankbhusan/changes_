@@ -56,3 +56,18 @@ Select-String -Path .\table_size_tracker.log -Pattern '^\d+ (/prd_enc\S+)\|2026-
 # 5) Scope of the MFU file, and whether any other ccms tables have overrides
 (Get-Content .\mfu_memory_settings.csv).Count
 Select-String -Path .\mfu_memory_settings.csv -Pattern "ccms|cps101|1309" -CaseSensitive:$false
+
+
+======================14th july
+
+hadoop fs -du /prd_enc/fdp/bank/hdata/fdp_prd/fdp_ccms_all_sri_open_prd/*/ | while read -r base_size disk_size tbl_path; do
+    for cob in 2026-06-30 2026-05-31 2026-04-30; do
+        part="${tbl_path}/ods=${cob}"
+        if hadoop fs -test -e "${part}"; then
+            cob_bytes=$(hadoop fs -du -s "${part}" | awk '{print $1}')
+            echo "${tbl_path}|${cob}|FOUND|cob_bytes=${cob_bytes}|base_path_bytes=${base_size}"
+        else
+            echo "${tbl_path}|${cob}|NOT_FOUND|base_path_bytes=${base_size}"
+        fi
+    done
+done
