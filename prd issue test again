@@ -561,3 +561,10 @@ sed -n '55,90p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_
 
 
 grep -E "Table ID:|Column Value:|Dynamic Memory \|" /path/to/that/table/log_file
+
+
+echo "=== MFU csv location and content ==="
+find / -path "*/data/mfu/incoming/mfu_memory_settings*.csv" 2>/dev/null -exec sh -c 'echo "FILE: {}"; cat {}' \;
+
+echo "=== Usage patterns across test_mayank scripts ==="
+grep -n -A2 "Usage" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/*.sh
