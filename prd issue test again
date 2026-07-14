@@ -473,3 +473,5 @@ hive -e "SELECT run_date, COUNT(*) FROM fdp_metadata_info_dev.table_size_registr
 echo "=== 2. the actual hive load error log the script itself references ==="
 ls -la /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/hive_load_err.log
 cat /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/hive_load_err.log
+
+grep -n "INSERT OVERWRITE\|LOAD DATA\|rows affected\|FAILED\|Error\|Exception" /tmp/tracker_run.log | tail -40
