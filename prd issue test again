@@ -130,3 +130,7 @@ grep -h "country_val" /CTRLFW/FDP/dev/metadata_upload/ingestion_metadata/*_child
 sed -n '305,318p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 hive -e "SELECT * FROM fdp_metadata_info_dev.table_size_registry WHERE table_file_id='2229' LIMIT 1;"
 grep -n "\"prod\"\|'prod'" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+
+sed -n '200,260p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+sed -n '100,150p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
