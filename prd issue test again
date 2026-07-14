@@ -375,3 +375,10 @@ wc -l /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
 grep "^2229" /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
 
 grep -n "Pre-fetching COBS\|COBS_LOOKUP" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== Full COBS_LOOKUP construction code, with context ==="
+LINE=$(grep -n "Pre-fetching COBS" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh | head -1 | cut -d: -f1)
+sed -n "$((LINE-5)),$((LINE+15))p" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== did COBS lookup ready line print, and with what count? ==="
+grep "COBS lookup ready" /tmp/tracker_run.log
