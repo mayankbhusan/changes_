@@ -437,3 +437,31 @@ tail -20 /tmp/tracker_run.log
 echo "=== shared cfg file health ==="
 wc -l /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
 grep "^2229" /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+table level checks:
+===========================
+
+CFG=/CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+echo "=== 1. structural integrity - any row without exactly 5 fields? ==="
+grep -v "^#" "$CFG" | awk -F'|' 'NF!=5 {print NR": ["$0"] has "NF" fields"}' | head -20
+echo "(blank above = all rows well-formed)"
+
+echo "=== 2. bucket distribution ==="
+grep -v "^#" "$CFG" | awk -F'|' '{print $3}' | sort | uniq -c
+
+echo "=== 3. UNKNOWN / error entries, and does the count line up with Failed probes: 469? ==="
+grep -c "UNKNOWN" "$CFG"
+grep "UNKNOWN" "$CFG" | head -5
+
+echo "=== 4. any leftover \$country_val placeholder anywhere in the full file? ==="
+grep -c "country_val" "$CFG"
+
+echo "=== 5. spot check real tables already seen in the log, do cfg values match? ==="
+grep -E "^28546\||^28547\||^28548\||^3112_TZ\|" "$CFG"
+
+echo "=== 6. blank or non-numeric size_gb values ==="
+grep -v "^#" "$CFG" | awk -F'|' '$4 !~ /^[0-9.]+$/ {print}' | head -10
+
+echo "=== 7. registry row count for today's run vs Processed count ==="
+hive -e "SELECT COUNT(*) FROM fdp_metadata_info_dev.table_size_registry WHERE run_date='2026-07-15';" 2>&1 | tail -10
