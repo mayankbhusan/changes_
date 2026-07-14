@@ -150,6 +150,10 @@ hive -e "SELECT COUNT(*) AS row_count FROM fdp_metadata_info_dev.table_size_regi
 echo "---CREATE BLOCK---"
 sed -n '50,85p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
+hive -e "DROP TABLE fdp_metadata_info_dev.table_size_registry;"
+echo "---VARS---"
+grep -n "HIVE_META_DB=\|HIVE_META_DB_LOCATION=\|REGISTRY_TABLE=\|REGISTRY_HDFS_PATH=" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
 
 hive -e "
 INSERT INTO fdp_metadata_info_dev.table_size_registry PARTITION (run_date='2026-06-30')
