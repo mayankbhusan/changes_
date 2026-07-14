@@ -301,3 +301,59 @@ echo "=== does explicit /usr/bin/date work? ==="
 /usr/bin/date -d "2026-06-01 +1 month -1 day" +%Y-%m-%d
 echo "=== does explicit /bin/date work? ==="
 /bin/date -d "2026-06-01 +1 month -1 day" +%Y-%m-%d
+
+
+
+python3 << 'EOF'
+import re
+
+path = "/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh"
+with open(path, "r") as f:
+    content = f.read()
+
+old_block_pattern = re.compile(
+    r'        # Production: compute last 3 consecutive month-end dates\n'
+    r'.*?'
+    r'        echo "\$\{result\}"\n',
+    re.DOTALL
+)
+
+new_block = '''        # Production: compute last 3 consecutive month-end dates (robust rewrite)
+        first_of_month=$(date +%Y-%m-01)
+        result=""
+        for i in 1 2 3; do
+            offset=$((i - 1))
+            last_day=$(date -d "${first_of_month} -${offset} month -1 day" +%Y-%m-%d)
+            result="${result} ${last_day}"
+        done
+        echo "${result}"
+'''
+
+new_content, n = old_block_pattern.subn(new_block, content)
+print(f"Replacements made: {n}")
+
+if n == 1:
+    with open(path, "w") as f:
+        f.write(new_content)
+    print("File updated successfully.")
+else:
+    print("ABORTED - pattern did not match exactly once, no changes made.")
+EOF
+
+
+
+echo "=== verify new code ==="
+sed -n '124,140p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== final run ==="
+FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_final.log 2>&1 &
+PID=$!
+for i in $(seq 1 15); do
+  if grep -q "Last 3 COBS dates" /tmp/tracker_final.log 2>/dev/null; then
+    echo "FOUND after $((i*2))s:"
+    grep "DEBUG_COBS\|Last 3 COBS dates" /tmp/tracker_final.log
+    kill $PID 2>/dev/null
+    break
+  fi
+  sleep 2
+done
