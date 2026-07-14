@@ -207,3 +207,11 @@ grep "table_id=2229" /tmp/tracker_final2.log
 grep "table_id=12044_KE\|table_id=3112_TZ\|table_id=12044_LK" /tmp/tracker_final2.log
 grep "Processed\|Failed probes" /tmp/tracker_final2.log
 wc -l /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+
+
+FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_run.log 2>&1 &
+
+ps -ef | grep table_size_tracker | grep -v grep
+grep "Last 3 COBS dates" /tmp/tracker_run.log
+tail -40 /tmp/tracker_run.log
