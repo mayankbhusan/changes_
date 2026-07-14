@@ -229,3 +229,30 @@ hive -e "SELECT DISTINCT run_date FROM fdp_metadata_info_dev.table_size_registry
 
 echo "=== 4. Table 2229 specific result from last run ==="
 grep "table_id=2229" /tmp/tracker_run.log
+
+
+echo "=== A. Live test of the exact condition logic ==="
+FORCE_PRD_COBS_LOGIC=1 sh -c '
+env="dev"
+if [ "${env}" = "prd" ] || [ "${FORCE_PRD_COBS_LOGIC:-}" = "1" ]; then
+    echo "PRD BRANCH FIRED"
+    result=""
+    y=$(date +%Y)
+    m=$(date +%m)
+    for i in 1 2 3; do
+        m=$(( 10#$m - 1 ))
+        if [ $m -eq 0 ]; then m=12; y=$((y - 1)); fi
+        last_day=$(date -d "${y}-$(printf "%02d" $m)-01 +1 month -1 day" +%Y-%m-%d)
+        result="${result} ${last_day}"
+    done
+    echo "RESULT:${result}"
+else
+    echo "ELSE BRANCH FIRED - env=$env FORCE=${FORCE_PRD_COBS_LOGIC:-UNSET}"
+fi
+'
+
+echo "=== B. Standalone test of the else-branch Hive pipeline ==="
+hive -e "SELECT DISTINCT run_date FROM fdp_metadata_info_dev.table_size_registry ORDER BY run_date DESC LIMIT 3;" 2>/dev/null | cat -A | head -5
+
+echo "=== C. Table 2229 result from the actual run ==="
+grep "table_id=2229" /tmp/tracker_run.log
