@@ -423,3 +423,17 @@ grep -E "^\| " /tmp/cobs_raw_test.txt | grep -v "table_file_id" | sed 's/^| *//;
 
 FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_run.log 2>&1 &
 echo "Started PID: $!"
+
+
+echo "=== table 2229 - expect COBS data found, bucket MEDIUM ==="
+grep "table_id=2229" /tmp/tracker_run.log
+
+echo "=== country_val fix still holds ==="
+grep "table_id=12044_KE\|table_id=3112_TZ\|table_id=12044_LK" /tmp/tracker_run.log
+
+echo "=== final processed/failed counts ==="
+tail -20 /tmp/tracker_run.log
+
+echo "=== shared cfg file health ==="
+wc -l /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+grep "^2229" /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
