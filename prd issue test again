@@ -121,3 +121,12 @@ brnz_table_lower=$(echo "${child_row}" | cut -d'|' -f5 | sed "s/\$country_val/${
 grep "Processed\|Failed probes" /tmp/tracker_final.log
 grep "table_id=12044_KE\|table_id=3112_TZ\|table_id=12044_LK" /tmp/tracker_final.log
 wc -l /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
+
+
+--------
+
+sed -n '229p;243p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+grep -h "country_val" /CTRLFW/FDP/dev/metadata_upload/ingestion_metadata/*_child_metadata.csv 2>/dev/null | head -5
+sed -n '305,318p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+hive -e "SELECT * FROM fdp_metadata_info_dev.table_size_registry WHERE table_file_id='2229' LIMIT 1;"
+grep -n "\"prod\"\|'prod'" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
