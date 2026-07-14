@@ -648,3 +648,8 @@ else:
         for i, l in enumerate(lines[ctx_start:new_gscf_idx+3], start=ctx_start+1):
             print(f"{i}: {l.rstrip(chr(10))}")
 PYEOF
+
+
+grep -m 3 -E "Table ID:|Column Value:|Dynamic Memory \|" /tmp/loader_test.log
+
+hive -e "SELECT table_file_id, country, size_gb, bucket FROM fdp_metadata_info_dev.table_size_registry WHERE table_file_id IN ('237','2336','275','245','71100','7029','71140','7100_HK','7140_HK','7108_TW','7100_TW','7140_TW') AND run_date='2026-07-15';"
