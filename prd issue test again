@@ -112,3 +112,7 @@ hive -e "SELECT COUNT(DISTINCT table_file_id) AS tables, COUNT(DISTINCT run_date
 grep -n "country_val" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 grep -n "country_val" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader_functions.sh
 grep -n "brnz_tgt_table_schema\|brnz_table_lower\|brnz_src_table\|HDFS_SIZE_LOOKUP" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+
+brnz_tgt_table_schema=$(echo "${child_row}" | cut -d'|' -f4 | sed "s/\$country_val/${country}/g" | tr '[:upper:]' '[:lower:]')
+brnz_table_lower=$(echo "${child_row}" | cut -d'|' -f5 | sed "s/\$country_val/${country}/g" | tr '[:upper:]' '[:lower:]')
