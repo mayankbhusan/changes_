@@ -465,3 +465,11 @@ grep -v "^#" "$CFG" | awk -F'|' '$4 !~ /^[0-9.]+$/ {print}' | head -10
 
 echo "=== 7. registry row count for today's run vs Processed count ==="
 hive -e "SELECT COUNT(*) FROM fdp_metadata_info_dev.table_size_registry WHERE run_date='2026-07-15';" 2>&1 | tail -10
+
+
+echo "=== 1. what run_date partitions actually exist in the registry right now? ==="
+hive -e "SELECT run_date, COUNT(*) FROM fdp_metadata_info_dev.table_size_registry GROUP BY run_date ORDER BY run_date;" 2>&1 | tail -20
+
+echo "=== 2. the actual hive load error log the script itself references ==="
+ls -la /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/hive_load_err.log
+cat /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/hive_load_err.log
