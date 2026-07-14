@@ -382,3 +382,33 @@ sed -n "$((LINE-5)),$((LINE+15))p" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank
 
 echo "=== did COBS lookup ready line print, and with what count? ==="
 grep "COBS lookup ready" /tmp/tracker_run.log
+
+echo "=== raw hive output format ==="
+hive -e "SELECT table_file_id, country, MAX(size_gb) FROM fdp_metadata_info_dev.table_size_registry WHERE run_date IN ('2026-06-30','2026-05-31','2026-04-30') GROUP BY table_file_id, country;" 2>/dev/null > /tmp/cobs_raw_test.txt
+cat -A /tmp/cobs_raw_test.txt
+
+echo "=== testing proposed parse fix against that real output ==="
+grep -E "^\| " /tmp/cobs_raw_test.txt | grep -v "table_file_id" | sed 's/^| *//;s/ *|$//' | sed 's/ *| */|/g'
+
+
+python3 << 'PYEOF'
+path = "/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh"
+with open(path, "r") as f:
+    lines = f.readlines()
+
+target_substring = "tr '\\t' '|' > ${COBS_LOOKUP}"
+matches = [i for i, line in enumerate(lines) if target_substring in line]
+print("Occurrences found:", len(matches))
+
+if len(matches) == 1:
+    idx = matches[0]
+    print("Original line:", repr(lines[idx]))
+    lines[idx] = '    | grep -E "^\\| " | grep -v "table_file_id" | sed \'s/^| *//;s/ *|$//\' | sed \'s/ *| */|/g\' > ${COBS_LOOKUP}\n'
+    with open(path, "w") as f:
+        f.writelines(lines)
+    print("File updated successfully.")
+else:
+    print("ABORTED - did not find exactly one match, no changes made.")
+    for i in matches:
+        print(f"  line {i+1}: {lines[i]!r}")
+PYEOF
