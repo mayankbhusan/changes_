@@ -269,3 +269,9 @@ grep -n "^unset\|unset \|exec sh\|exec \$0\|env -i" /CTRLFW/FDP/dev/ingestion/sc
 echo "=== 4. Top of script - how env actually gets set ==="
 sed -n '1,20p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
+
+echo "=== TEST: does sourcing .bashrc wipe our var? ==="
+FORCE_PRD_COBS_LOGIC=1 sh -c 'echo "BEFORE: FORCE=${FORCE_PRD_COBS_LOGIC:-UNSET}"; source ~/.bashrc; echo "AFTER: FORCE=${FORCE_PRD_COBS_LOGIC:-UNSET}"'
+
+echo "=== ~/.bashrc content ==="
+cat ~/.bashrc
