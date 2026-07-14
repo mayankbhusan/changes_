@@ -102,3 +102,8 @@ else
 fi
 
 read_parent_metadata
+==============
+
+ls -la /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg*
+find /CTRLFW -maxdepth 4 \( -iname ".snapshot" -o -iname ".zfs" \) 2>/dev/null
+hive -e "SELECT COUNT(DISTINCT table_file_id) AS tables, COUNT(DISTINCT run_date) AS run_dates, MIN(run_date) AS earliest, MAX(run_date) AS latest FROM fdp_metadata_info_dev.table_size_registry;"
