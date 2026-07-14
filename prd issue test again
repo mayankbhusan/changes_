@@ -585,3 +585,22 @@ grep -n -B2 -A3 "triggerer" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_st
 mfu_file=$(ls -tr ${BASE_NAS_PATH}/dev/data/mfu/incoming/mfu_memory_settings*.csv | tail -1)
 echo "Script would pick: $mfu_file"
 cat "$mfu_file"
+
+
+python3 << 'PYEOF'
+path = "/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh"
+with open(path) as f:
+    content = f.read()
+
+old = "source ${FDP_DIR}/ingestion/scripts/fdp_staging_loader_functions.sh"
+new = "source ${FDP_DIR}/ingestion/scripts/test_mayank/fdp_staging_loader_functions.sh"
+
+count = content.count(old)
+if count != 1:
+    print(f"ABORTED: expected exactly 1 occurrence, found {count}. No changes made.")
+else:
+    content = content.replace(old, new)
+    with open(path, "w") as f:
+        f.write(content)
+    print("DONE: now sourcing the test_mayank functions file.")
+PYEOF
