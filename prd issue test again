@@ -116,3 +116,8 @@ grep -n "brnz_tgt_table_schema\|brnz_table_lower\|brnz_src_table\|HDFS_SIZE_LOOK
 
 brnz_tgt_table_schema=$(echo "${child_row}" | cut -d'|' -f4 | sed "s/\$country_val/${country}/g" | tr '[:upper:]' '[:lower:]')
 brnz_table_lower=$(echo "${child_row}" | cut -d'|' -f5 | sed "s/\$country_val/${country}/g" | tr '[:upper:]' '[:lower:]')
+
+
+grep "Processed\|Failed probes" /tmp/tracker_final.log
+grep "table_id=12044_KE\|table_id=3112_TZ\|table_id=12044_LK" /tmp/tracker_final.log
+wc -l /CTRLFW/FDP/dev/ingestion/param/table_size_bucket.cfg
