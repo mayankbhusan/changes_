@@ -156,6 +156,31 @@ grep -n "HIVE_META_DB=\|HIVE_META_DB_LOCATION=\|REGISTRY_TABLE=\|REGISTRY_HDFS_P
 
 
 hive -e "
+CREATE DATABASE IF NOT EXISTS fdp_metadata_info_dev LOCATION '/sit_enc/fdp/bank/hdata/fdp_dev/fdp_metadata_info_dev/';
+CREATE TABLE IF NOT EXISTS fdp_metadata_info_dev.table_size_registry (
+    table_file_id       STRING,
+    source_table_name   STRING,
+    brnz_src_schema     STRING,
+    brnz_src_table      STRING,
+    hdfs_path           STRING,
+    source              STRING,
+    tp                  STRING,
+    size_gb             FLOAT,
+    bucket              STRING,
+    last_updated        TIMESTAMP,
+    country             STRING
+)
+PARTITIONED BY (run_date STRING)
+STORED AS ORC
+LOCATION '/sit_enc/fdp/bank/hdata/fdp_dev/fdp_metadata_info_dev/table_size_registry/'
+TBLPROPERTIES ('transactional'='false');
+" 2>/dev/null
+echo "---VERIFY---"
+hive -e "SHOW CREATE TABLE fdp_metadata_info_dev.table_size_registry;" 2>/dev/null
+
+
+
+hive -e "
 INSERT INTO fdp_metadata_info_dev.table_size_registry PARTITION (run_date='2026-06-30')
 SELECT '2229','ACBS_DSA_SLPD_BT_SRI_XX','fdp_df_acbs_sri_open_dev','ACBS_DSA_SLPD_BT_SRI_XX','/sit_enc/fdp/bank/hdata/fdp_dev/fdp_df_acbs_sri_open_dev/acbs_dsa_slpd_bt_sri_xx','EDM T1','ACBS',CAST(5.5 AS FLOAT),'MEDIUM',CAST('2026-06-30 10:00:00' AS TIMESTAMP),'HK';
 INSERT INTO fdp_metadata_info_dev.table_size_registry PARTITION (run_date='2026-05-31')
