@@ -71,3 +71,16 @@ hadoop fs -du /prd_enc/fdp/bank/hdata/fdp_prd/fdp_ccms_all_sri_open_prd/*/ | whi
         fi
     done
 done
+=========================
+
+
+
+
+Replace with:
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+INSERT OVERWRITE TABLE ${REGISTRY_TABLE} PARTITION (run_date)
+SELECT table_file_id, source_table_name, brnz_src_schema, brnz_src_table,
+       hdfs_path, source, tp, CAST(size_gb AS FLOAT),
+       bucket, CAST(last_updated AS TIMESTAMP), country, run_date
+FROM ${STAGING_TABLE};
