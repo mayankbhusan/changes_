@@ -84,3 +84,21 @@ SELECT table_file_id, source_table_name, brnz_src_schema, brnz_src_table,
        hdfs_path, source, tp, CAST(size_gb AS FLOAT),
        bucket, CAST(last_updated AS TIMESTAMP), country, run_date
 FROM ${STAGING_TABLE};
+
+===========================
+line=$(grep "^${tableId}," "${mfu_file}")
+if [ -n "$line" ]; then
+    id=$(echo "$line" | awk -F',' '{print $1}')
+    props=$(echo "$line" | awk -F',' '{print $2}')
+    loginfo "Table ID: $id"
+    loginfo "Column Value: $props"
+else
+    loginfo "No matching tableId found in the mfu memory file, Hence default memory will be used."
+    # props='  --driver-memory 5G --executor-cores 3 --executor-memory 6G  --num-executors 4 '
+    country_upper=${11}
+    get_spark_config_for_table
+    loginfo " Dynamic Memory | TableID=${table_id} | Country=${country_upper} | DriverMem=${SPARK_DRIVER_MEM} | ExecMem=${SPARK_EXEC_MEM} | Overhead=${SPARK_EXEC_OVERHEAD} | Cores=${SPARK_EXEC_CORES} | NumExec=${SPARK_NUM_EXEC}"
+    props="--driver-memory ${SPARK_DRIVER_MEM} --executor-memory ${SPARK_EXEC_MEM} --executor-cores ${SPARK_EXEC_CORES} --num-executors ${SPARK_NUM_EXEC}"
+fi
+
+read_parent_metadata
