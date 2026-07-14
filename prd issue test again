@@ -290,3 +290,24 @@ for i in $(seq 1 15); do
   sleep 2
 done
 cat /tmp/tracker_debug.log
+
+
+sed -i '124a\    echo "DEBUG_COBS: env=[${env}] FORCE=[${FORCE_PRD_COBS_LOGIC:-UNSET}]" >&2' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== verify insert ==="
+sed -n '124,128p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== run with probe ==="
+FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_debug2.log 2>&1 &
+PID=$!
+echo "Started PID: $PID"
+for i in $(seq 1 15); do
+  if grep -q "DEBUG_COBS" /tmp/tracker_debug2.log 2>/dev/null; then
+    echo "FOUND after $((i*2))s:"
+    grep "DEBUG_COBS\|Last 3 COBS dates" /tmp/tracker_debug2.log
+    kill $PID 2>/dev/null
+    break
+  fi
+  sleep 2
+done
+cat /tmp/tracker_debug2.log
