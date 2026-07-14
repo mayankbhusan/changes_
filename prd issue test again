@@ -475,3 +475,7 @@ ls -la /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/hive_load_err.log
 cat /CTRLFW/FDP/dev/ingestion/scripts/preprocessing/hive_load_err.log
 
 grep -n "INSERT OVERWRITE\|LOAD DATA\|rows affected\|FAILED\|Error\|Exception" /tmp/tracker_run.log | tail -40
+
+
+
+grep -n "STAGING_TABLE=\|CREATE TABLE.*STAGING_TABLE\|INSERT OVERWRITE TABLE.*REGISTRY_TABLE\|INSERT INTO.*REGISTRY_TABLE" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
