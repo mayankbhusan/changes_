@@ -482,3 +482,56 @@ grep -n "STAGING_TABLE=\|CREATE TABLE.*STAGING_TABLE\|INSERT OVERWRITE TABLE.*RE
 
 
 sed -n '320,362p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+
+
+python3 << 'PYEOF'
+path = "/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh"
+with open(path) as f:
+    lines = f.readlines()
+
+anchor_idx = None
+for i, l in enumerate(lines):
+    if "SET hive.exec.dynamic.partition=true" in l:
+        anchor_idx = i
+        break
+
+if anchor_idx is None:
+    print("ABORTED: anchor line not found. No changes made.")
+else:
+    start = anchor_idx
+    while start > 0 and lines[start - 1].lstrip().startswith("#"):
+        start -= 1
+
+    if start == anchor_idx:
+        print("No dead '#' lines directly above the anchor. Nothing changed.")
+    else:
+        removed = lines[start:anchor_idx]
+        print(f"Removing {len(removed)} dead line(s), file lines {start+1}-{anchor_idx}:")
+        for r in removed:
+            print("  -", r.rstrip("\n"))
+
+        new_lines = lines[:start] + lines[anchor_idx:]
+        with open(path, "w") as f:
+            f.writelines(new_lines)
+
+        print("\nResulting region after edit:")
+        ctx_start = max(0, start - 3)
+        for i, l in enumerate(new_lines[ctx_start:start+6], start=ctx_start+1):
+            print(f"{i}: {l.rstrip(chr(10))}")
+
+print("\n--- line ~328 area, untouched, for reference only ---")
+for i in range(322, 336):
+    if i < len(lines):
+        print(f"{i+1}: {lines[i].rstrip(chr(10))}")
+PYEOF
+
+
+
+
+grep -n "INSERT OVERWRITE TABLE.*REGISTRY_TABLE" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank
+FORCE_PRD_COBS_LOGIC=1 nohup sh table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_run.log 2>&1 &
+
+hive -e "SELECT COUNT(*) FROM fdp_metadata_info_dev.table_size_registry WHERE run_date='2026-07-15';"
