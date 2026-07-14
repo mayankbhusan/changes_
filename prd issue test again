@@ -215,3 +215,17 @@ FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/ta
 ps -ef | grep table_size_tracker | grep -v grep
 grep "Last 3 COBS dates" /tmp/tracker_run.log
 tail -40 /tmp/tracker_run.log
+
+
+echo "=== 1. Current get_last_3_cobs_dates code ==="
+grep -n "get_last_3_cobs_dates\|COBS_DATES=" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+sed -n '118,145p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== 2. Exact command used for the last run ==="
+history | grep "FORCE_PRD_COBS_LOGIC" | tail -5
+
+echo "=== 3. Manually test the Hive fallback query standalone ==="
+hive -e "SELECT DISTINCT run_date FROM fdp_metadata_info_dev.table_size_registry ORDER BY run_date DESC LIMIT 3;" 2>&1 | tail -20
+
+echo "=== 4. Table 2229 specific result from last run ==="
+grep "table_id=2229" /tmp/tracker_run.log
