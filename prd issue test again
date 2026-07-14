@@ -527,6 +527,8 @@ for i in range(322, 336):
 PYEOF
 
 
+grep -c '\$(REGISTRY_TABLE)' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+grep -c '\${REGISTRY_TABLE}' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
 
 grep -n "INSERT OVERWRITE TABLE.*REGISTRY_TABLE" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
