@@ -146,7 +146,9 @@ sed -i 's@if \[ "${env}" = "prd" \]; then@if [ "${env}" = "prd" ] || [ "${FORCE_
 grep -n "FORCE_PRD_COBS_LOGIC" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
 grep -n "REGISTRY_TABLE=\|CREATE TABLE.*REGISTRY_TABLE\|PARTITIONED BY\|INSERT OVERWRITE TABLE.*REGISTRY_TABLE\|INSERT INTO.*REGISTRY_TABLE" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
-
+hive -e "SELECT COUNT(*) AS row_count FROM fdp_metadata_info_dev.table_size_registry;" 2>/dev/null | tail -5
+echo "---CREATE BLOCK---"
+sed -n '50,85p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
 
 hive -e "
