@@ -292,22 +292,25 @@ done
 cat /tmp/tracker_debug.log
 
 
-sed -i '124a\    echo "DEBUG_COBS: env=[${env}] FORCE=[${FORCE_PRD_COBS_LOGIC:-UNSET}]" >&2' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+echo "=== 1. Raw bytes of the FORCE value already captured ==="
+grep "DEBUG_COBS" /tmp/tracker_debug2.log | od -c | head -5
 
-echo "=== verify insert ==="
-sed -n '124,128p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+echo "=== 2. Add branch-entry markers ==="
+sed -i '/if \[ "\${env}" = "prd" \] || \[ "\${FORCE_PRD_COBS_LOGIC:-}" = "1" \]; then/a\    echo "DEBUG_COBS: TOOK_PRD_BRANCH" >&2' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+sed -i '/# Non-prod: only use dates that actually have data in registry/a\    echo "DEBUG_COBS: TOOK_ELSE_BRANCH" >&2' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
-echo "=== run with probe ==="
-FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_debug2.log 2>&1 &
+echo "=== verify markers landed ==="
+grep -n "DEBUG_COBS" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== 3. rerun with markers ==="
+FORCE_PRD_COBS_LOGIC=1 nohup sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_debug3.log 2>&1 &
 PID=$!
-echo "Started PID: $PID"
 for i in $(seq 1 15); do
-  if grep -q "DEBUG_COBS" /tmp/tracker_debug2.log 2>/dev/null; then
+  if grep -q "Last 3 COBS dates" /tmp/tracker_debug3.log 2>/dev/null; then
     echo "FOUND after $((i*2))s:"
-    grep "DEBUG_COBS\|Last 3 COBS dates" /tmp/tracker_debug2.log
+    grep "DEBUG_COBS\|Last 3 COBS dates" /tmp/tracker_debug3.log
     kill $PID 2>/dev/null
     break
   fi
   sleep 2
 done
-cat /tmp/tracker_debug2.log
