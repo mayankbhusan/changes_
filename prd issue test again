@@ -558,3 +558,6 @@ sed -n '1200,1290p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_lo
 echo "==========="
 
 sed -n '55,90p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh
+
+
+grep -E "Table ID:|Column Value:|Dynamic Memory \|" /path/to/that/table/log_file
