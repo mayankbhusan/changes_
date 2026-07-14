@@ -537,3 +537,5 @@ cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank
 FORCE_PRD_COBS_LOGIC=1 nohup sh table_size_tracker.sh dev /CTRLFW/FDP/dev > /tmp/tracker_run.log 2>&1 &
 
 hive -e "SELECT COUNT(*) FROM fdp_metadata_info_dev.table_size_registry WHERE run_date='2026-07-15';"
+
+hive -e "SELECT run_date, bucket, size_gb FROM fdp_metadata_info_dev.table_size_registry WHERE table_file_id='2229' ORDER BY run_date DESC;"
