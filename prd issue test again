@@ -580,3 +580,8 @@ cat ${BASE_NAS_PATH}/dev/data/mfu/incoming/mfu_memory_settings*.csv 2>&1
 
 echo "=== how fdp_staging_loader.sh actually calls the triggerer ==="
 grep -n -B2 -A3 "triggerer" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader.sh
+
+
+mfu_file=$(ls -tr ${BASE_NAS_PATH}/dev/data/mfu/incoming/mfu_memory_settings*.csv | tail -1)
+echo "Script would pick: $mfu_file"
+cat "$mfu_file"
