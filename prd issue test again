@@ -256,3 +256,16 @@ hive -e "SELECT DISTINCT run_date FROM fdp_metadata_info_dev.table_size_registry
 
 echo "=== C. Table 2229 result from the actual run ==="
 grep "table_id=2229" /tmp/tracker_run.log
+
+echo "=== 1. All assignments to env ==="
+grep -n '\benv=' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== 2. All FORCE_PRD_COBS_LOGIC references ==="
+grep -n "FORCE_PRD_COBS_LOGIC" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== 3. Any unset/exec that could strip env vars ==="
+grep -n "^unset\|unset \|exec sh\|exec \$0\|env -i" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+echo "=== 4. Top of script - how env actually gets set ==="
+sed -n '1,20p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
