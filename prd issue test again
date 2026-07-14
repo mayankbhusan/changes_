@@ -609,3 +609,42 @@ PYEOF
 sed -n '1235,1250p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_loader_functions.sh
 
 grep -n "FILE_NAS_PATH=" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/*.sh
+
+
+
+python3 << 'PYEOF'
+path = "/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/fdp_staging_spark_triggerer.sh"
+with open(path) as f:
+    lines = f.readlines()
+
+read_parent_idx = None
+for i, l in enumerate(lines):
+    if l.strip() == "read_parent_metadata":
+        if read_parent_idx is not None:
+            print(f"ABORTED: multiple standalone calls found (lines {read_parent_idx+1}, {i+1}). No changes made.")
+            raise SystemExit
+        read_parent_idx = i
+
+if read_parent_idx is None:
+    print("ABORTED: no standalone 'read_parent_metadata' call found. No changes made.")
+else:
+    gscf_idx = None
+    for i, l in enumerate(lines):
+        if l.strip() == "get_spark_config_for_table":
+            gscf_idx = i
+            break
+    if gscf_idx is None:
+        print("ABORTED: no standalone 'get_spark_config_for_table' call found. No changes made.")
+    elif read_parent_idx < gscf_idx:
+        print("NOTHING TO DO: read_parent_metadata already runs first.")
+    else:
+        read_line = lines.pop(read_parent_idx)
+        new_gscf_idx = gscf_idx - 1
+        lines.insert(new_gscf_idx, read_line)
+        with open(path, "w") as f:
+            f.writelines(lines)
+        print("DONE: read_parent_metadata now runs before get_spark_config_for_table.")
+        ctx_start = max(0, new_gscf_idx - 3)
+        for i, l in enumerate(lines[ctx_start:new_gscf_idx+3], start=ctx_start+1):
+            print(f"{i}: {l.rstrip(chr(10))}")
+PYEOF
