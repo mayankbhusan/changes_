@@ -1,5 +1,8 @@
 grep -n "table_id\|TABLE_ID\|cobs\|COBS\|hadoop fs -du\|du -s" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
+grep -n "TEMP_CFG" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+echo "---"
+sed -n '128,147p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 
 
 sed -n '118,201p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
