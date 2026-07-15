@@ -31,6 +31,21 @@ for id in 51799 237 5004 803; do
 done
 
 
+source /CTRLFW/FDP/dev/config/ingestion_config.env
+
+echo "=== 51799 (FDP_TSYS_ALL_SRI_OPEN/tsys_dwh_issfeed_tbalances) ==="
+hadoop fs -du -s -h "${hdfs_path}FDP_TSYS_ALL_SRI_OPEN/tsys_dwh_issfeed_tbalances/"
+
+echo "=== 237 (FDP_RZR_WESTFX_SRI_OPEN/rzr_west_fx_trade) ==="
+hadoop fs -du -s -h "${hdfs_path}FDP_RZR_WESTFX_SRI_OPEN/rzr_west_fx_trade/"
+
+echo "=== 5004 (fdp_dtp_all_sri_open/dtp_dealdpr) ==="
+hadoop fs -du -s -h "${hdfs_path}fdp_dtp_all_sri_open/dtp_dealdpr/"
+
+echo "=== 803 (FDP_ACT_ALL_SRI_OPEN/act_all_dailylevels) ==="
+hadoop fs -du -s -h "${hdfs_path}FDP_ACT_ALL_SRI_OPEN/act_all_dailylevels/"
+
+
 
 source /CTRLFW/FDP/prd1/config/ingestion_config.env 2>/dev/null || source /CTRLFW/FDP/prd/config/ingestion_config.env
 hadoop fs -du -s -h ${hdfs_path}<schema>/<table_lower>/
