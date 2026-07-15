@@ -1,0 +1,1 @@
+grep -n "table_id\|TABLE_ID\|cobs\|COBS\|hadoop fs -du\|du -s" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
