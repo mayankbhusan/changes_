@@ -1,1 +1,9 @@
 grep -n "table_id\|TABLE_ID\|cobs\|COBS\|hadoop fs -du\|du -s" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+
+
+sed -n '118,201p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+echo "---"
+sed -n '255,335p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+echo "---"
+grep -n "PREPROCESSING_DIR=\|CHILD_LOOKUP=\|LOG_FILE=\|HDFS_SIZE_LOOKUP=\|loginfo()" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
