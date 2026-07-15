@@ -661,3 +661,5 @@ grep -m 5 -E "Table ID:|Column Value:|Dynamic Memory \||Spark Execution Complete
 
 
 grep -n "OUTPUT_CFG=\|REGISTRY_TABLE=\|HIVE_META_DB=\|INSERT OVERWRITE TABLE.*REGISTRY_TABLE" /CTRLFW/FDP/prd/ingestion/scripts/table_size_tracker.sh
+
+grep -n "^HIVE_META_DB=\|^REGISTRY_TABLE=\|^OUTPUT_CFG=\|^SIZE_BUCKET_CFG=\|for table_id\|while read\|INSERT OVERWRITE TABLE.*REGISTRY_TABLE\|CREATE TABLE IF NOT EXISTS.*REGISTRY_TABLE\|CREATE DATABASE IF NOT EXISTS" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
