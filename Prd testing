@@ -49,3 +49,9 @@ hadoop fs -du -s -h "${hdfs_path}FDP_ACT_ALL_SRI_OPEN/act_all_dailylevels/"
 
 source /CTRLFW/FDP/prd1/config/ingestion_config.env 2>/dev/null || source /CTRLFW/FDP/prd/config/ingestion_config.env
 hadoop fs -du -s -h ${hdfs_path}<schema>/<table_lower>/
+
+
+source /CTRLFW/FDP/dev/config/ingestion_config.env
+hadoop fs -ls ${hdfs_path} 2>/dev/null | grep -iE "tsys|rzr|dtp|act"
+echo "---"
+hadoop fs -ls ${hdfs_path} 2>/dev/null | head -20
