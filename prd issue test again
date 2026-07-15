@@ -658,3 +658,6 @@ hive -e "SELECT table_file_id, country, size_gb, bucket FROM fdp_metadata_info_d
 
 
 grep -m 5 -E "Table ID:|Column Value:|Dynamic Memory \||Spark Execution Completed|Spark execution failed" /tmp/loader_test_245.log
+
+
+grep -n "OUTPUT_CFG=\|REGISTRY_TABLE=\|HIVE_META_DB=\|INSERT OVERWRITE TABLE.*REGISTRY_TABLE" /CTRLFW/FDP/prd/ingestion/scripts/table_size_tracker.sh
