@@ -10,3 +10,15 @@ echo "---"
 sed -n '255,335p' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
 echo "---"
 grep -n "PREPROCESSING_DIR=\|CHILD_LOOKUP=\|LOG_FILE=\|HDFS_SIZE_LOOKUP=\|loginfo()" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/table_size_tracker.sh
+
+
+IDS=$(
+  awk -F'|' '$3=="XL"{print $1}' /CTRLFW/FDP/prd/ingestion/param/table_size_bucket.cfg | head -2
+  awk -F'|' '$3=="LARGE"{print $1}' /CTRLFW/FDP/prd/ingestion/param/table_size_bucket.cfg | head -2
+  awk -F'|' '$3=="SMALL"{print $1}' /CTRLFW/FDP/prd/ingestion/param/table_size_bucket.cfg | head -1
+)
+
+for id in $IDS; do
+  echo "=== $id ==="
+  grep "^${id}|" /CTRLFW/FDP/prd/metadata_upload/ingestion_metadata/*child_metadata.csv
+done
