@@ -15,3 +15,7 @@ for f in fdp_fmrp_staging_loader fdp_fmrp_rollover bpsi_loader ytd_fdp_staging_l
   echo "== $f =="
   grep -n "table_id=" /CTRLFW/FDP/prd1/ingestion/scripts/${f}.sh
 done
+
+grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh\|api_loader.sh\|ytd_fdp_staging_loader.sh" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home 2>/dev/null | grep -v "\.log$"
+
+grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh" /CTRLFW/FDP/prd1/ingestion/ /CTRLFW/FDP/prd1/utils/ 2>/dev/null
