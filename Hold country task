@@ -10,3 +10,8 @@ a="2026-12-31"; b="2025-04-30"
 [[ ${a}>=${b} ]] && echo "works" || echo "broken"
 
 grep -rn "adm_hold.sh\|Adm_softexit" /CTRLFW/FDP/prd1/ingestion/ /CTRLFW/FDP/prd1/utils/ 2>/dev/null
+
+for f in fdp_fmrp_staging_loader fdp_fmrp_rollover bpsi_loader ytd_fdp_staging_loader fdp_fmrp_api_loader fdp_staging_loader api_loader; do
+  echo "== $f =="
+  grep -n "table_id=" /CTRLFW/FDP/prd1/ingestion/scripts/${f}.sh
+done
