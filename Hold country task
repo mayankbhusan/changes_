@@ -5,3 +5,8 @@ grep -rli "adm_hold" /CTRLFW/FDP/prd1/ 2>/dev/null
 grep -rli "mfu/incoming" /CTRLFW/FDP/prd1/ingestion/ 2>/dev/null
 
 grep -in "country\|cut -d\|awk -F\|IFS=" /CTRLFW/FDP/prd1/ingestion/scripts/fdp_staging_loader_functions.sh
+
+a="2026-12-31"; b="2025-04-30"
+[[ ${a}>=${b} ]] && echo "works" || echo "broken"
+
+grep -rn "adm_hold.sh\|Adm_softexit" /CTRLFW/FDP/prd1/ingestion/ /CTRLFW/FDP/prd1/utils/ 2>/dev/null
