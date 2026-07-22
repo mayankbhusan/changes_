@@ -1,0 +1,9 @@
+find /CTRLFW/FDP/dev \( -iname "*hold*" -o -iname "*mfu*" \) 2>/dev/null
+
+grep -rli "hold\|mfu" /CTRLFW/FDP/dev/ingestion/scripts/
+
+grep -in "hold\|mfu" /CTRLFW/FDP/dev/config/ingestion_config.env
+
+grep -in "country\|cut -d\|awk -F\|IFS=" <script>
+
+grep -in "table_file_id" <script>
