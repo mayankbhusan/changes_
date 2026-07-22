@@ -1,9 +1,7 @@
-find /CTRLFW/FDP/dev \( -iname "*hold*" -o -iname "*mfu*" \) 2>/dev/null
+find /CTRLFW/FDP/prd1 \( -iname "*hold*" -o -iname "*mfu*" \) 2>/dev/null
 
-grep -rli "hold\|mfu" /CTRLFW/FDP/dev/ingestion/scripts/
+grep -rli "adm_hold" /CTRLFW/FDP/prd1/ 2>/dev/null
 
-grep -in "hold\|mfu" /CTRLFW/FDP/dev/config/ingestion_config.env
+grep -rli "mfu/incoming" /CTRLFW/FDP/prd1/ingestion/ 2>/dev/null
 
-grep -in "country\|cut -d\|awk -F\|IFS=" <script>
-
-grep -in "table_file_id" <script>
+grep -in "country\|cut -d\|awk -F\|IFS=" /CTRLFW/FDP/prd1/ingestion/scripts/fdp_staging_loader_functions.sh
