@@ -36,3 +36,7 @@ grep -n "country_service_name\|country_prod_service_dict" /CTRLFW/FDP/prd1/tools
 
 
 sed -n '384,392p' /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
+
+grep -n "^\s*env=\|^\s*country=\|^\s*\\$1\|^\s*\\$5" /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_version.sh
+
+grep -in "adm_hold\|hold" /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_version.sh
