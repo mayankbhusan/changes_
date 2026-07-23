@@ -50,3 +50,7 @@ sed -n '21,60p' /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_prod
 
 ls -la /CTRLFW/FDP/prd/tools/executables/airflow_home/dag_config/product/
 grep -rln "country_prod_service_dict" /CTRLFW/FDP/prd1/tools_v2/ /CTRLFW/FDP/prd1/tools/ 2>/dev/null
+
+grep -n -A3 "country_prod_service_dict = {" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags_backup/fdp_products_dag_prd1.py
+grep -n "country_service_name = service_name" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags_backup/fdp_products_dag_prd1.py
+ls -la /CTRLFW/FDP/prd/tools/executables/airflow_home/dag_config/
