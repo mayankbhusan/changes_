@@ -24,3 +24,10 @@ grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh" /CTRLFW/FDP/prd1/ingestio
 grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh\|api_loader.sh\|ytd_fdp_staging_loader.sh" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home 2>/dev/null | grep -v "\.log$"
 
 grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh" /CTRLFW/FDP/prd1/ingestion/ /CTRLFW/FDP/prd1/utils/ 2>/dev/null
+
+
+diff /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_fmrp_EG_dag.py /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_fmrp_AE_dag.py
+
+grep -n "table_id\|bash_command" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_fmrp_EG_dag.py
+
+grep -n "table_id\|country\|for .* in\|bpsi_loader\|api_loader\|ytd_fdp_staging_loader" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
