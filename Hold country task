@@ -47,3 +47,6 @@ awk -F',' '$2 ~ /daas|dq/' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.
 
 grep -n "SCIACTLMT_TW\|EGLEX_AU\|ACCT-EBBS-ACCOUNT_AE" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
 sed -n '21,60p' /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
+
+ls -la /CTRLFW/FDP/prd/tools/executables/airflow_home/dag_config/product/
+grep -rln "country_prod_service_dict" /CTRLFW/FDP/prd1/tools_v2/ /CTRLFW/FDP/prd1/tools/ 2>/dev/null
