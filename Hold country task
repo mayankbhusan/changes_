@@ -19,3 +19,8 @@ done
 grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh\|api_loader.sh\|ytd_fdp_staging_loader.sh" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home 2>/dev/null | grep -v "\.log$"
 
 grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh" /CTRLFW/FDP/prd1/ingestion/ /CTRLFW/FDP/prd1/utils/ 2>/dev/null
+
+
+grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh\|api_loader.sh\|ytd_fdp_staging_loader.sh" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home 2>/dev/null | grep -v "\.log$"
+
+grep -rln "fdp_fmrp_staging_loader.sh\|bpsi_loader.sh" /CTRLFW/FDP/prd1/ingestion/ /CTRLFW/FDP/prd1/utils/ 2>/dev/null
