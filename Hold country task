@@ -44,3 +44,6 @@ grep -in "adm_hold\|hold" /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_ver
 grep -n '=\$[0-9]' /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_version.sh
 
 awk -F',' '$2 ~ /daas|dq/' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv
+
+grep -n "SCIACTLMT_TW\|EGLEX_AU\|ACCT-EBBS-ACCOUNT_AE" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
+sed -n '21,60p' /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
