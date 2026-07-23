@@ -31,3 +31,5 @@ diff /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_fmrp_EG_dag.py 
 grep -n "table_id\|bash_command" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_fmrp_EG_dag.py
 
 grep -n "table_id\|country\|for .* in\|bpsi_loader\|api_loader\|ytd_fdp_staging_loader" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
+
+grep -n "country_service_name\|country_prod_service_dict" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
