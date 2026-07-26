@@ -1,0 +1,65 @@
+mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/sandbox/data/mfu/incoming
+
+cat > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/sandbox/data/mfu/incoming/adm_hold_20260724.csv << 'EOF'
+21115,ingestion,2025-04-30,2026-12-31,Not available in DAQ,,,
+5198_AE,ingestion,2025-04-30,2026-12-31,Karthik to confirm,oafgl,OAFGL_AE_OAFGL_ACCTJRNSTDEXT,ACCT-OTP-BASELTXN
+5198_CI,ingestion,2025-04-30,2026-12-31,Exit market country,oafgl,OAFGL_CI_OAFGL_ACCTJRNSTDEXT,ACCT-OTP-BASELTXN
+ACCT-EBBS-ACCOUNT_AE,daas,2025-04-30,2026-12-31,This is related to TD-Exit,EBBS,,
+EOF
+
+cat > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/fdp_adm_hold_test.sh << 'EOF'
+#!/bin/sh
+BASE_NAS_PATH=/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test
+env=$1
+type=$2
+task_id=$3
+ods=$4
+country=$5
+country_upper=`echo "${country}" | tr '[:lower:]' '[:upper:]'`
+
+Adm_softexit()
+{
+    adm_hold_csv=`ls -tr ${BASE_NAS_PATH}/${env}/data/mfu/incoming/adm_hold_????????.csv | tail -1`
+    lookup_id=${task_id}
+
+    if [ -n "${country}" ]; then
+        adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${task_id}_${country_upper}" | grep -i ${type}`
+        if [ -n "${adm_hold}" ]; then
+            lookup_id="${task_id}_${country_upper}"
+        else
+            adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${task_id}" | grep -i ${type}`
+        fi
+    else
+        adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${task_id}" | grep -i ${type}`
+    fi
+
+    id=`echo ${adm_hold} | cut -d ',' -f1`
+    type=`echo ${adm_hold} | cut -d ',' -f2`
+    start_date=`echo ${adm_hold} | cut -d ',' -f3`
+    end_date=`echo ${adm_hold} | cut -d ',' -f4`
+    if [[ ${lookup_id} == ${id} && ( ${end_date} > ${ods} || ${end_date} == ${ods} ) && ( ${ods} > ${start_date} || ${ods} == ${start_date} ) ]]
+    then
+        echo "id ${lookup_id} is present in hold configuration and end_date matches with configuration."
+        return 10
+    else
+        echo "Service Name ${task_id} (country=${country:-none}) is not present in hold configuration. Hence proceed further"
+        return 20
+    fi
+}
+Adm_softexit
+EOF
+chmod +x /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/fdp_adm_hold_test.sh
+
+
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test
+S=fdp_adm_hold_test.sh
+
+echo "A:"; bash $S sandbox ingestion 21115 2025-06-01;              echo "exit=$?"
+echo "B:"; bash $S sandbox ingestion 5198  2025-06-01 AE;           echo "exit=$?"
+echo "C:"; bash $S sandbox ingestion 5198  2025-06-01 TW;           echo "exit=$?"
+echo "D:"; bash $S sandbox ingestion 5198  2025-06-01 CI;           echo "exit=$?"
+echo "E:"; bash $S sandbox daas ACCT-EBBS-ACCOUNT 2025-06-01 AE;    echo "exit=$?"
+echo "F:"; bash $S sandbox daas ACCT-EBBS-ACCOUNT 2025-06-01 CN;    echo "exit=$?"
+echo "G:"; bash $S sandbox ingestion 5198  2025-06-01;              echo "exit=$?"
+echo "H:"; bash $S sandbox ingestion 21115 2025-06-01 AE;           echo "exit=$?"
