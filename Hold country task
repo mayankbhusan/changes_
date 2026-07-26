@@ -109,7 +109,7 @@ bash $S sandbox ingestion 21115 2025-06-01
 bash $S sandbox ingestion 5198  2025-06-01 AE
 bash $S sandbox ingestion 5198  2025-06-01 TW
 bash $S sandbox ingestion 5198  2025-06-01 CI
-bash $S sandbox daas ACCT-EBBS-ACCOUNT 2025-06-01 AE
-bash $S sandbox daas ACCT-EBBS-ACCOUNT 2025-06-01 CN
 bash $S sandbox ingestion 5198  2025-06-01
 bash $S sandbox ingestion 21115 2025-06-01 AE
+
+awk -F',' '$2=="daas"' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/sandbox/data/mfu/incoming/adm_hold_20260624.csv | head -3
