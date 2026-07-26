@@ -97,3 +97,19 @@ Adm_softexit()
     fi
 }
 Adm_softexit
+
+
+
+cp $(ls -tr /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv | tail -1) /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/sandbox/data/mfu/incoming/
+grep -E "^21115,|^5198_AE,|^5198_CI,|^ACCT-EBBS-ACCOUNT_AE," /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/sandbox/data/mfu/incoming/adm_hold_*.csv
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test
+S=fdp_adm_hold_country.sh
+bash $S sandbox ingestion 21115 2025-06-01
+bash $S sandbox ingestion 5198  2025-06-01 AE
+bash $S sandbox ingestion 5198  2025-06-01 TW
+bash $S sandbox ingestion 5198  2025-06-01 CI
+bash $S sandbox daas ACCT-EBBS-ACCOUNT 2025-06-01 AE
+bash $S sandbox daas ACCT-EBBS-ACCOUNT 2025-06-01 CN
+bash $S sandbox ingestion 5198  2025-06-01
+bash $S sandbox ingestion 21115 2025-06-01 AE
