@@ -113,3 +113,35 @@ bash $S sandbox ingestion 5198  2025-06-01
 bash $S sandbox ingestion 21115 2025-06-01 AE
 
 awk -F',' '$2=="daas"' /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/sandbox/data/mfu/incoming/adm_hold_20260624.csv | head -3
+
+
+Hi Guna, here's where things stand on 15126669 - approach plus what I've done so far.
+
+APPROACH
+
+Both ingestion and daas route through the same hold-check script, fdp_adm_hold.sh, but call it differently, so the fix has two parts:
+
+1. Core change (done): fdp_adm_hold.sh gets an optional 5th param, country. If passed, it tries an exact <id>_<COUNTRY> match first, falls back to the existing bare-id match if no country-specific row exists. If country isn't passed at all - which is every caller today - behavior is unchanged. This was deliberate so the base fix can go out without touching any caller, meaning ongoing ingestion isn't affected until we choose to wire something to pass country.
+
+2. Ingestion side (not started): 7 loaders - fdp_fmrp_staging_loader.sh, fdp_fmrp_rollover.sh, bpsi_loader.sh, ytd_fdp_staging_loader.sh, fdp_fmrp_api_loader.sh, fdp_staging_loader.sh, api_loader.sh - currently pass a bare table_id. Plan is to wire these one at a time with testing in between, not all together.
+
+3. Daas side (not started, bigger piece): fdp_daas_new_version.sh already has a country param, but its only caller (fdp_products_dag_prd.py) hardcodes it to 'ALL'. Root cause: the dict meant to drive per-country values, country_prod_service_dict, is declared empty and never populated anywhere - dev or prd. This needs: populating that dict (need your call on hand-filled vs file-loaded), fixing line 377 in the same file (currently missing the country suffix - line 376 above it is commented out next to a "workaround, fix next release" note), and passing real country through instead of 'ALL'.
+
+Safety note: fdp_products_dag_prd.py also has a branch (table_id == '184') that triggers ingestion loaders directly. Daas-side changes will stay scoped to the country-dependency function so that branch isn't touched.
+
+PROGRESS SO FAR
+
+- Confirmed fdp_adm_hold.sh has no country param today, matches only on env/type/task_id/ods
+- Confirmed all 9 real callers (7 ingestion + fdp_daas_new_version.sh) pass a bare id, none support country
+- Confirmed country_prod_service_dict is empty in every DAG file, dev and prd - this is the blocker on the daas side
+- Found the disabled country-suffix line in fdp_products_dag_prd.py (line 377 active, line 376 the intended version, commented out)
+- Found real hold-file rows already country-suffixed (5198_AE, ACCT-EBBS-ACCOUNT_AE etc.) that are likely inert today given the above
+- Built and tested the fdp_adm_hold.sh country-match change - ran 8 scenarios (matching country, non-matching, cross-country isolation, no-country fallback) across sandbox, dev with test data, and dev against the real copied prd1 hold file. All passed.
+- Also found and fixed an unrelated bug in the same script - the date comparison behaves inconsistently across bash versions, rewrote it to a portable form, verified on real dev bash (4.4.20)
+
+NOT STARTED
+- No caller scripts touched yet - intentional, keeps ingestion unaffected until wiring is deliberate
+- country_prod_service_dict population - waiting on your input
+- Daas DAG wiring (line 377 fix + real country instead of 'ALL')
+
+Happy to walk through the fdp_adm_hold.sh change directly whenever works for you.
