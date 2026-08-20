@@ -1,0 +1,62 @@
+mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/sandbox/data/mfu/incoming
+
+cat > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/sandbox/data/mfu/incoming/adm_hold_20260820.csv << 'EOF'
+21115,ingestion,2025-04-30,2026-12-31,Not available in DAQ,,,
+5198_AE,ingestion,2025-04-30,2026-12-31,Karthik to confirm,oafgl,OAFGL_AE_OAFGL_ACCTJRNSTDEXT,ACCT-OTP-BASELTXN
+5198_CI,ingestion,2025-04-30,2026-12-31,Exit market country,oafgl,OAFGL_CI_OAFGL_ACCTJRNSTDEXT,ACCT-OTP-BASELTXN
+EOF
+
+
+cat > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/fdp_adm_hold_v2.sh << 'EOF'
+#!/bin/sh
+BASE_NAS_PATH=/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+env=$1
+type=$2
+task_id=$3
+ods=$4
+
+Adm_softexit()
+{
+	adm_hold_csv=`ls -tr ${BASE_NAS_PATH}/${env}/data/mfu/incoming/adm_hold_????????.csv | tail -1`
+
+	adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${task_id}" | grep -i ${type}`
+	lookup_id=${task_id}
+
+	if [ -z "${adm_hold}" ]; then
+		base_id=`echo ${task_id} | sed 's/_[A-Z]\{2,3\}$//'`
+		if [ "${base_id}" != "${task_id}" ]; then
+			adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${base_id}" | grep -i ${type}`
+			lookup_id=${base_id}
+		fi
+	fi
+
+	id=`echo ${adm_hold} | cut -d ',' -f1`
+	type=`echo ${adm_hold} | cut -d ',' -f2`
+	start_date=`echo ${adm_hold} | cut -d ',' -f3`
+	end_date=`echo ${adm_hold} | cut -d ',' -f4`
+	if [[ ${lookup_id} == ${id} && ( ${end_date} > ${ods} || ${end_date} == ${ods} ) && ( ${ods} > ${start_date} || ${ods} == ${start_date} ) ]]
+	then
+		echo "id ${lookup_id} is present in hold configuration and end_date matches with configuration."
+		return 10
+	else
+		echo "Service Name ${task_id} is not present in hold configuration. Hence proceed further"
+		return 20
+	fi
+}
+Adm_softexit
+EOF
+chmod +x /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/fdp_adm_hold_v2.sh
+
+
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+S=fdp_adm_hold_v2.sh
+bash $S sandbox ingestion 21115 2025-06-01
+bash $S sandbox ingestion 5198_AE 2025-06-01
+bash $S sandbox ingestion 5198_TW 2025-06-01
+bash $S sandbox ingestion 5198_CI 2025-06-01
+bash $S sandbox ingestion 21115_AE 2025-06-01
+
+
+cp $(ls -tr /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv | tail -1) /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/sandbox/data/mfu/incoming/
+grep -E "^5198_AE,|^5198_CI," /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/sandbox/data/mfu/incoming/adm_hold_*.csv
