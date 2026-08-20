@@ -1,0 +1,52 @@
+#!/bin/sh
+##################################################
+# script name  : fdp_adm_hold.sh
+# Description  : The script reads the MFU file to do soft exit for ingestion, daas and dq
+# Developer    : Sheshkumar Phulse (1638379)
+# Developed on : September 04, 2023
+# Modified     : Country-aware match via task_id suffix - Mayank Bhushan (story 15126669)
+# sample CSV file :
+#            id|type|hold_interval|end_date
+#            384|ingestion|2023-08-09|2023-08-09
+#            5198_AE|ingestion|2023-08-09|2023-08-09
+#            GRP-SCI-GRPPROF|daas|2023-08-06|2023-08-09
+#            GRP-SCI-GRPPROF|dq|2023-08-07|2023-08-09
+##################################################
+
+BASE_NAS_PATH=/CTRLFW/FDP
+env=$1
+type=$2
+task_id=$3
+ods=$4
+
+#Function to do soft exit job based on date specified
+Adm_softexit()
+{
+	adm_hold_csv=`ls -tr ${BASE_NAS_PATH}/${env}/data/mfu/incoming/adm_hold_????????.csv | tail -1`
+
+	adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${task_id}" | grep -i ${type}`
+	lookup_id=${task_id}
+
+	if [ -z "${adm_hold}" ]; then
+		base_id=`echo ${task_id} | sed 's/_[A-Z]\{2,3\}$//'`
+		if [ "${base_id}" != "${task_id}" ]; then
+			adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${base_id}" | grep -i ${type}`
+			lookup_id=${base_id}
+		fi
+	fi
+
+	id=`echo ${adm_hold} | cut -d ',' -f1`
+	type=`echo ${adm_hold} | cut -d ',' -f2`
+	start_date=`echo ${adm_hold} | cut -d ',' -f3`
+	end_date=`echo ${adm_hold} | cut -d ',' -f4`
+	if [[ ${lookup_id} == ${id} && ( ${end_date} > ${ods} || ${end_date} == ${ods} ) && ( ${ods} > ${start_date} || ${ods} == ${start_date} ) ]]
+	then
+		echo "id ${lookup_id} is present in hold configuration and end_date matches with configuration."
+		return 10
+	else
+		echo "Service Name ${task_id} is not present in hold configuration. Hence proceed further"
+		return 20
+	fi
+}
+
+Adm_softexit
