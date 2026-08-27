@@ -65,3 +65,5 @@ grep -E "^5198_AE,|^5198_CI," /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold
 grep -E "_(AE|CI|EG|TW|TH|AU|MO|NP|IQ|CN)," /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_20260826.csv | cut -d',' -f1 | sed 's/_[A-Z]\{2,3\}$//' | sort -u > /tmp/suffixed_base_ids.txt
 cut -d',' -f1 /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_20260826.csv | sort -u > /tmp/all_ids.txt
 comm -12 /tmp/suffixed_base_ids.txt /tmp/all_ids.txt
+
+grep -E "_(AE|CI|EG|TW|TH|AU|MO|NP|IQ|CN)," /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_20260826.csv | cut -d',' -f1 | sed 's/_[A-Z]\{2,3\}$//' | grep -cE "^(28422|28423|28429|PRVSN-CCMS-IIP_ALL)$"
