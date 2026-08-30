@@ -4,6 +4,7 @@ grep -n "partition_var_str\|country_val=" /CTRLFW/FDP/prd1/tools_v2/executables/
 find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec grep -l "BBBB" {} +
 grep -n -A40 "def build_country_specific_dependencies" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
 grep -n -B5 -A2 "service_param_str" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
+grep -n -A2 "country_service_dict\s*=\|service_params_dict\s*=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
 
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming
 grep -i ',daas,' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv \
