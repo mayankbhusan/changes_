@@ -1,3 +1,27 @@
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming
+csvfile=adm_hold_20260830.csv
+
+real_row=$(grep -E '^[^,]+_[A-Z]{2,3},' "$csvfile" | head -1)
+echo "Real row picked: $real_row"
+real_id=$(echo "$real_row" | cut -d',' -f1)
+start_date=$(echo "$real_row" | cut -d',' -f3)
+end_date=$(echo "$real_row" | cut -d',' -f4)
+echo "id=$real_id  window=$start_date to $end_date"
+
+base_id=$(echo "$real_id" | sed 's/_[A-Z]\{2,3\}$//')
+fake_id="${base_id}_ZZ"
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+
+echo "--- HELD CASE: $real_id ---"
+sh -x ./fdp_adm_hold_v2.sh dev daas "$real_id" 2026-08-30
+echo "Exit: $?  (expect 10, if 2026-08-30 falls in $start_date to $end_date)"
+
+echo "--- NOT-HELD CASE: $fake_id ---"
+sh -x ./fdp_adm_hold_v2.sh dev daas "$fake_id" 2026-08-30
+echo "Exit: $?  (expect NOT 10)"
+-------------
+
 grep -i "ACCT-EBBS-ACCOUNT_AE" /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv
 
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming
