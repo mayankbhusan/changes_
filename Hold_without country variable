@@ -1,5 +1,8 @@
 find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec basename {} \; | tail -30
 find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec grep -H "^BBBBBBBBBBBBBB" {} +
+grep -n "partition_var_str\|country_val=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
+find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec grep -l "BBBB" {} +
+grep -n -A40 "def build_country_specific_dependencies" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
 
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming
 grep -i ',daas,' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv \
