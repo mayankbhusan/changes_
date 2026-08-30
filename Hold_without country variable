@@ -7,6 +7,7 @@ grep -n -B5 -A2 "service_param_str" /CTRLFW/FDP/prd1/tools_v2/executables/airflo
 grep -n -A2 "country_service_dict\s*=\|service_params_dict\s*=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
 grep -n "country_service_dict\|product_data\s*=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
 grep -n "product_data\.\(append\|extend\)\|product_data\s*=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
+find /CTRLFW/FDP/prd1/logs/daas/ -iname "*ACCT-EBBS-ACCOUNT*" 2>/dev/null | sort | tail -10
 
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming
 grep -i ',daas,' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv \
