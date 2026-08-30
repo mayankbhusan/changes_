@@ -4,27 +4,16 @@ mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu
 grep -i ',daas,' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv \
   > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming/adm_hold_20260830.csv
 
-cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
-sh -x ./fdp_adm_hold_v2.sh dev daas ACCT-EBBS-ACCOUNT_AE <ods_from_step1>
+authoritative_file=$(ls -tr /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv | tail -1)
+echo "Using: $authoritative_file"
+grep -i ',daas,' "$authoritative_file" > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming/adm_hold_20260830.csv
+grep -i "ACCT-EBBS-ACCOUNT_AE" /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming/adm_hold_20260830.csv
+
+sh -x ./fdp_adm_hold_v2.sh dev daas ACCT-EBBS-ACCOUNT_AE 2026-08-30
 echo "Exit: $?"
 
-sh -x ./fdp_adm_hold_v2.sh dev daas ACCT-EBBS-ACCOUNT_US <ods_from_step1>
+sh -x ./fdp_adm_hold_v2.sh dev daas ACCT-EBBS-ACCOUNT_ZZ 2026-08-30
 echo "Exit: $?"
-
-mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit
-cp /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_version.sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit/
-cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit
-sed -n '27p' fdp_daas_new_version.sh
-sed -i '27s#.*#sh -x ${BASE_NAS_PATH}/${env}/utils/fdp_adm_hold.sh $env daas ${servicename}_${country_val} $ods#' fdp_daas_new_version.sh
-sed -n '27p' fdp_daas_new_version.sh
-dos2unix fdp_daas_new_version.sh
-sh -n fdp_daas_new_version.sh && echo "SYNTAX OK"
-
-
-
-
-
-
 
 ================================================================================================================
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/sandbox/data/mfu/incoming
