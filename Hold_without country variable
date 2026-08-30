@@ -1,50 +1,24 @@
-find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec basename {} \; | tail -30
-find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec grep -H "^BBBBBBBBBBBBBB" {} +
-grep -n "partition_var_str\|country_val=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
-find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec grep -l "BBBB" {} +
-grep -n -A40 "def build_country_specific_dependencies" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag_prd.py
-grep -n -B5 -A2 "service_param_str" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
-grep -n -A2 "country_service_dict\s*=\|service_params_dict\s*=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
-grep -n "country_service_dict\|product_data\s*=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
-grep -n "product_data\.\(append\|extend\)\|product_data\s*=" /CTRLFW/FDP/prd1/tools_v2/executables/airflow_home/dags/fdp_products_dag.py
-find /CTRLFW/FDP/prd1/logs/daas/ -iname "*ACCT-EBBS-ACCOUNT*" 2>/dev/null | sort | tail -10
+grep -i "ACCT-EBBS-ACCOUNT_AE" /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv
 
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming
 grep -i ',daas,' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv \
   > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming/adm_hold_20260830.csv
-wc -l /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming/adm_hold_20260830.csv
 
 cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+sh -x ./fdp_adm_hold_v2.sh dev daas ACCT-EBBS-ACCOUNT_AE <ods_from_step1>
+echo "Exit: $?"
 
-cat > test_daas_wiring.sh << 'EOF'
-#!/bin/bash
-env=dev
-servicename="PUT_REAL_SERVICENAME_FROM_STEP1"
-country_val="PUT_REAL_COUNTRY_FROM_STEP1"
-ods="PUT_A_DATE_INSIDE_THE_HOLD_WINDOW"
-sh -x ./fdp_adm_hold_v2.sh $env daas ${servicename}_${country_val} $ods
-if [ $? -eq 10 ]; then
-  echo "RESULT: exiting as it is part of hold script"
-else
-  echo "RESULT: continue running the job"
-fi
-EOF
-
-sh test_daas_wiring.sh
-
-
+sh -x ./fdp_adm_hold_v2.sh dev daas ACCT-EBBS-ACCOUNT_US <ods_from_step1>
+echo "Exit: $?"
 
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit
 cp /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_version.sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit/
 cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit
-
 sed -n '27p' fdp_daas_new_version.sh
 sed -i '27s#.*#sh -x ${BASE_NAS_PATH}/${env}/utils/fdp_adm_hold.sh $env daas ${servicename}_${country_val} $ods#' fdp_daas_new_version.sh
 sed -n '27p' fdp_daas_new_version.sh
-
 dos2unix fdp_daas_new_version.sh
 sh -n fdp_daas_new_version.sh && echo "SYNTAX OK"
-
 
 
 
