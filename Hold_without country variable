@@ -1,4 +1,5 @@
 find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec basename {} \; | tail -30
+find /CTRLFW/FDP/prd1/logs/daas/ -name "*.log" -mtime -7 -exec grep -H "^BBBBBBBBBBBBBB" {} +
 
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2/dev/data/mfu/incoming
 grep -i ',daas,' /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_*.csv \
