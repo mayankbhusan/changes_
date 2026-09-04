@@ -1,3 +1,75 @@
+Hi Guna — sharing the actual before/after in fdp_adm_hold.sh, line by line, plus why the return codes specifically matter here:
+
+OLD — single exact match, no fallback:
+```
+adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2=$task_id | grep -i $type`
+id=`echo ${adm_hold} | cut -d ',' -f1`
+type=`echo ${adm_hold} | cut -d ',' -f2`
+start_date=`echo ${adm_hold} | cut -d ',' -f3`
+end_date=`echo ${adm_hold} | cut -d ',' -f4`
+if [[ ${task_id} == ${id} && ${end_date}>=${ods} && ${ods}>=${start_date} ]]
+then
+    echo "id $task_id is present in hold configuration and end_date matches with configuration."
+    return 10
+else
+    echo "Service Name $task_id is not present in hold configuration. Hence proceed further"
+    return 20
+fi
+```
+One lookup, exact string match on task_id as given. If a row matches, $id is guaranteed equal to $task_id by construction. No way to distinguish "hold everywhere" from "hold in one country" — the id either matches in full or the script has nothing.
+
+NEW — exact match first, fallback to bare id second:
+```
+adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${task_id}" | grep -i ${type}`
+lookup_id=${task_id}
+
+if [ -z "${adm_hold}" ]; then
+    base_id=`echo ${task_id} | sed 's/_[A-Z]\{2,3\}$//'`
+    if [ "${base_id}" != "${task_id}" ]; then
+        adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2="${base_id}" | grep -i ${type}`
+        lookup_id=${base_id}
+    fi
+fi
+
+id=`echo ${adm_hold} | cut -d ',' -f1`
+type=`echo ${adm_hold} | cut -d ',' -f2`
+start_date=`echo ${adm_hold} | cut -d ',' -f3`
+end_date=`echo ${adm_hold} | cut -d ',' -f4`
+if [[ ${lookup_id} == ${id} && ( ${end_date} > ${ods} || ${end_date} == ${ods} ) && ( ${ods} > ${start_date} || ${ods} == ${start_date} ) ]]
+then
+    echo "id ${lookup_id} is present in hold configuration and end_date matches with configuration."
+    return 10
+else
+    echo "Service Name ${task_id} is not present in hold configuration. Hence proceed further"
+    return 20
+fi
+```
+- lookup_id — new, tracks which id (original or stripped) actually matched, since there are now two possible ones.
+- if [ -z "${adm_hold}" ] block — entirely new, only runs when the exact match found nothing.
+- sed strips a trailing 2-3 letter country suffix, if one exists; second awk call retries on the stripped id.
+- ${lookup_id} == ${id} instead of ${task_id} == ${id} — not a style choice, explained below.
+- Date check rewritten from >= to explicit ( > || == ) — separate bug, unrelated to the country logic, parses inconsistently across bash versions.
+
+Why the comparison variable specifically matters — traced through to real behavior, not just internal to this file:
+
+10 and 20 aren't arbitrary — they're the exact signal fdp_daas_new_version.sh (and every other caller) checks the moment this script returns:
+```sh
+if [ $? -eq 10 ];
+then
+  echo "exiting as it is part of hold script"
+  exit 0
+else
+  echo "continue running the job"
+fi
+```
+Return 10 → job stops here, held on purpose. Anything else, including 20 → job runs normally.
+
+That's exactly why lookup_id isn't optional. Take a real fallback case: task_id=5198_AE, no exact match, falls back to base_id=5198, and 5198 IS on the hold list. If the comparison still used task_id (the old variable), 5198_AE == 5198 is false — script returns 20 instead of 10 — caller's if [ $? -eq 10 ] takes the else branch — a job that should've been held runs anyway. Same row found, opposite real outcome, purely from comparing against the wrong variable.
+
+Tested against real prd1 data both directions — held combo returns exit 10, non-held returns exit 20 — confirming this chain end-to-end, not just in isolation.
+-----------------------------------------------------
+
+
 mkdir -p /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit
 cp /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_version.sh /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit/
 cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/daas_edit
