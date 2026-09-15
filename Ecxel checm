@@ -31,3 +31,58 @@ for code in col_k:
         missing.append(code)
 
 print(f"\n{len(missing)} of {len(col_k)} not found in any of the {len(strings_by_file)} files")
+
+
+
+
+
+---------------------------------
+
+import json, openpyxl
+from pathlib import Path
+
+def collect_strings(obj, found=None):
+    found = found if found is not None else set()
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            found.add(k)
+            collect_strings(v, found)
+    elif isinstance(obj, list):
+        for item in obj:
+            collect_strings(item, found)
+    elif isinstance(obj, str):
+        found.add(obj)
+    return found
+
+wb = openpyxl.load_workbook("Copy of USLRR UAT Orchestration to snyc with PRD1.xlsx", data_only=True)
+ws = wb["Daily 105-159"]   # swap tab name if needed
+
+rows = [(j.value, k.value) for j, k in zip(ws["J"], ws["K"]) if j.value and k.value]
+
+file_cache = {}
+def load_strings(fname):
+    if fname not in file_cache:
+        p = Path(fname)
+        if p.exists():
+            with open(p, encoding="utf-8") as f:
+                file_cache[fname] = collect_strings(json.load(f))
+        else:
+            file_cache[fname] = None
+    return file_cache[fname]
+
+missing_entry, missing_file = [], set()
+for j_val, k_val in rows:
+    fname = f"{str(j_val).strip().lower()}_dependency_config.json"
+    strings = load_strings(fname)
+    if strings is None:
+        print(f"{k_val}: SKIPPED — {fname} not uploaded yet")
+        missing_file.add(fname)
+    elif k_val in strings:
+        print(f"{k_val}: found in {fname}")
+    else:
+        print(f"{k_val}: NOT FOUND in {fname}")
+        missing_entry.append((k_val, fname))
+
+print(f"\n{len(rows)} rows checked")
+print(f"{len(missing_entry)} entries confirmed missing from their config file")
+print(f"{len(missing_file)} config files not uploaded yet: {sorted(missing_file)}")
