@@ -1,0 +1,33 @@
+import json, openpyxl
+from pathlib import Path
+
+def collect_strings(obj, found=None):
+    found = found if found is not None else set()
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            found.add(k)
+            collect_strings(v, found)
+    elif isinstance(obj, list):
+        for item in obj:
+            collect_strings(item, found)
+    elif isinstance(obj, str):
+        found.add(obj)
+    return found
+
+wb = openpyxl.load_workbook("USLRR UAT Orchestration to snyc with PRD1.xlsx", data_only=True)
+ws = wb["MONTHLY 1-52"]
+col_k = [c.value for c in ws["K"] if c.value]
+
+strings_by_file = {}
+for jf in sorted(Path("configs").glob("*.json")):
+    with open(jf, encoding="utf-8") as f:
+        strings_by_file[jf.name] = collect_strings(json.load(f))
+
+missing = []
+for code in col_k:
+    found_in = [name for name, s in strings_by_file.items() if code in s]
+    print(f"{code}: {'found in ' + ', '.join(found_in) if found_in else 'NOT FOUND'}")
+    if not found_in:
+        missing.append(code)
+
+print(f"\n{len(missing)} of {len(col_k)} not found in any of the {len(strings_by_file)} files")
