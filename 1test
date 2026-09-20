@@ -1,0 +1,16 @@
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+
+authoritative_file=$(ls -tr /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv | tail -1)
+grep -i ',daas,' "$authoritative_file" > dev/data/mfu/incoming/adm_hold_20260830.csv
+grep "ACCT_LMT_RLTD-HOGAN-SCIACTLMT_TW" dev/data/mfu/incoming/adm_hold_20260830.csv
+
+today=$(date +%Y-%m-%d)
+
+echo "=== TEST 1: servicename_country_val — tested, committed order — checking $today ==="
+sh -x ./fdp_adm_hold_v2.sh dev daas "ACCT_LMT_RLTD-HOGAN-SCIACTLMT_TW" "$today"
+echo ">>> EXIT CODE: $?"
+
+echo ""
+echo "=== TEST 2: country_val_servicename — Guna's proposed order, SAME real row ==="
+sh -x ./fdp_adm_hold_v2.sh dev daas "TW_ACCT_LMT_RLTD-HOGAN-SCIACTLMT" "$today"
+echo ">>> EXIT CODE: $?"
