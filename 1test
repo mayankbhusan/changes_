@@ -26,3 +26,9 @@ grep -ci ',daas,' "$authoritative_file"
 echo ""
 echo "Every daas row with a country-style suffix — see for yourself which end the country sits on:"
 grep -iE '^[^,]+_[A-Z]{2,3},daas,' "$authoritative_file"
+
+
+====================
+
+grep -iE '^[^,]+_[A-Z]{2,3},daas,' "$authoritative_file" | grep -v '_ALL,' | tee /tmp/genuine_country_rows.txt
+echo "Genuine country-coded rows: $(wc -l < /tmp/genuine_country_rows.txt)"
