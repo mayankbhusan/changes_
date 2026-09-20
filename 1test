@@ -14,3 +14,15 @@ echo ""
 echo "=== TEST 2: country_val_servicename — Guna's proposed order, SAME real row ==="
 sh -x ./fdp_adm_hold_v2.sh dev daas "TW_ACCT_LMT_RLTD-HOGAN-SCIACTLMT" "$today"
 echo ">>> EXIT CODE: $?"
+
+
+=========================
+
+authoritative_file=$(ls -tr /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv | tail -1)
+echo "Checking: $authoritative_file"
+echo ""
+echo "Total daas-type rows in the real hold list:"
+grep -ci ',daas,' "$authoritative_file"
+echo ""
+echo "Every daas row with a country-style suffix — see for yourself which end the country sits on:"
+grep -iE '^[^,]+_[A-Z]{2,3},daas,' "$authoritative_file"
