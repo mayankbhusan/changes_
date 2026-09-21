@@ -32,3 +32,11 @@ grep -iE '^[^,]+_[A-Z]{2,3},daas,' "$authoritative_file"
 
 grep -iE '^[^,]+_[A-Z]{2,3},daas,' "$authoritative_file" | grep -v '_ALL,' | tee /tmp/genuine_country_rows.txt
 echo "Genuine country-coded rows: $(wc -l < /tmp/genuine_country_rows.txt)"
+
+
+===========
+
+in screenshot, sent by guna, he is telling " we are reading exit status twice because we going to run adm_hold twice. one with the actual service name(existing now) and one with appending country_val in the begining that also we have to see. 
+the if else condition of checking exit status has to execute twice. 
+he also told its already having if-else condition, check if its working fine, then we can raise PR. see the path he shared now and the screenshot for reference and guide me exactly what we need to change in that file.
+as he is very sure that we don't need to change the adm_hold script.
