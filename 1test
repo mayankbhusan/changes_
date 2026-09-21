@@ -1,3 +1,13 @@
+today=$(date +%Y-%m-%d)
+BASE_NAS_PATH=/CTRLFW/FDP
+env=dev
+servicename="ACCT_LMT_RLTD-HOGAN-SCIACTLMT"
+country_val="TW"
+sh -x ${BASE_NAS_PATH}/${env}/utils/fdp_adm_hold.sh $env daas ${servicename}_${country_val} $today
+echo ">>> EXIT: $?"
+
+===============
+
 cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
 
 authoritative_file=$(ls -tr /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv | tail -1)
