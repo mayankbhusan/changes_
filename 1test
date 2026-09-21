@@ -36,7 +36,29 @@ echo "Genuine country-coded rows: $(wc -l < /tmp/genuine_country_rows.txt)"
 
 ===========
 
-in screenshot, sent by guna, he is telling " we are reading exit status twice because we going to run adm_hold twice. one with the actual service name(existing now) and one with appending country_val in the begining that also we have to see. 
-the if else condition of checking exit status has to execute twice. 
-he also told its already having if-else condition, check if its working fine, then we can raise PR. see the path he shared now and the screenshot for reference and guide me exactly what we need to change in that file.
-as he is very sure that we don't need to change the adm_hold script.
+today=$(date +%Y-%m-%d)
+sh -x /CTRLFW/FDP/prd1/utils/fdp_adm_hold.sh prd1 daas "ACCT_LMT_RLTD-HOGAN-SCIACTLMT_TW" "$today"
+echo ">>> EXIT CODE: $?"
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+cp /CTRLFW/FDP/prd1/utils/fdp_adm_hold.sh fdp_adm_hold_datefix.sh
+
+- if [[ ${task_id} == ${id} && ${end_date}>=${ods} && ${ods}>=${start_date} ]]
++ if [[ ${task_id} == ${id} && ( ${end_date} > ${ods} || ${end_date} == ${ods} ) && ( ${ods} > ${start_date} || ${ods} == ${start_date} ) ]]
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+cp /CTRLFW/FDP/prd1/daas/pyspark_scripts/fdp_daas_new_version.sh fdp_daas_test.sh
+
+sh -x ${BASE_NAS_PATH}/${env}/utils/fdp_adm_hold.sh $env daas ${servicename}_${country_val} $ods
+if [ $? -eq 10 ]; then
+ echo "exiting as it is part of hold script"; exit 0
+else
+ echo "continue running the job"
+fi
+
+sh -x ${BASE_NAS_PATH}/${env}/utils/fdp_adm_hold.sh $env daas $servicename $ods
+if [ $? -eq 10 ]; then
+ echo "exiting as it is part of hold script"; exit 0
+else
+ echo "continue running the job"
+fi
