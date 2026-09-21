@@ -1,0 +1,43 @@
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+
+authoritative_file=$(ls -tr /CTRLFW/FDP/prd1/data/mfu/incoming/adm_hold_????????.csv | tail -1)
+grep -i ',daas,' "$authoritative_file" > dev/data/mfu/incoming/adm_hold_20260830.csv
+grep "PRVSN-CCMS-IIP_ALL," dev/data/mfu/incoming/adm_hold_20260830.csv
+
+cat > fdp_adm_hold_OLD_reference.sh << 'EOF'
+#!/bin/sh
+BASE_NAS_PATH=/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/hold_test/v2
+env=$1
+type=$2
+task_id=$3
+ods=$4
+
+Adm_softexit()
+{
+    adm_hold_csv=`ls -tr ${BASE_NAS_PATH}/${env}/data/mfu/incoming/adm_hold_????????.csv | tail -1`
+    adm_hold=`cat ${adm_hold_csv} | awk -F ',' '$1==v2' v2=$task_id | grep -i $type`
+    id=`echo ${adm_hold} | cut -d ',' -f1`
+    type=`echo ${adm_hold} | cut -d ',' -f2`
+    start_date=`echo ${adm_hold} | cut -d ',' -f3`
+    end_date=`echo ${adm_hold} | cut -d ',' -f4`
+    if [[ ${task_id} == ${id} && ${end_date}>=${ods} && ${ods}>=${start_date} ]]
+    then
+        echo "id $task_id is present in hold configuration and end_date matches with configuration."
+        return 10
+    else
+        echo "Service Name $task_id is not present in hold configuration. Hence proceed further"
+        return 20
+    fi
+}
+Adm_softexit
+EOF
+
+today=$(date +%Y-%m-%d)
+
+echo "=== OLD script (today's real logic, exact-match only) — real bare hold, hypothetical MO caller ==="
+sh -x ./fdp_adm_hold_OLD_reference.sh dev daas "PRVSN-CCMS-IIP_ALL_MO" "$today"
+echo ">>> EXIT CODE: $?"
+echo ""
+echo "=== NEW script (fdp_adm_hold_v2.sh) — SAME hypothetical caller ==="
+sh -x ./fdp_adm_hold_v2.sh dev daas "PRVSN-CCMS-IIP_ALL_MO" "$today"
+echo ">>> EXIT CODE: $?"
