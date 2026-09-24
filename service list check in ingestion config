@@ -1,0 +1,60 @@
+TP_SYS = "EBBS"
+COUNTRIES = ["BD", "PK"]
+
+services_by_file = {
+    "acct_dependency_config.json": [
+        ("ACCT-EBBS-ACCOUNT_EGLEX",
+         "EBBS_ACCOUNT,EBBS_EXCRTL,EBBS_INTPL,EBBS_INTPLDT,EBBS_INTCURR,EBBS_ACINTHIS,EBBS_INTDTL,EBBS_BRN,EBBS_ACCINFO,EBBS_MLTMAST,EBBS_PRVINFO,M_CDL_GLBU_TO_ENTCD_BKCD_XLATE,M_PRODUCT_XLATE,M_SCB_ENTITY_XLATE,M_SCI_XREF_XLATE,PRTY-SCI-SUBPROF,ALT_PRTY-SCI-LSPSYSXREF"),
+        ("ACCT-EBBS-PMMKDEAL_EGLEX",
+         "EBBS_BRN,EBBS_PMMKDEAL,EBBS_DEALPRV,EBBS_MDELTYP,EBBS_DLINTSH,EBBS_INTCURR,EBBS_DLINTHIS,EBBS_DLINFO,EBBS_PRD,M_PRODUCT_XLATE,EBBS_TRNCHSB,ALT_PRTY-SCI-LSPSYSXREF,M_CDL_GLBU_TO_ENTCD_BKCD_XLATE,M_PRODUCT_XLATE,M_SCB_ENTITY_XLATE,M_SCI_XREF_XLATE,PRTY-SCI-SUBPROF"),
+    ],
+    "acct_bal_dependency_config.json": [
+        ("ACCT_BAL-EBBS-ACCOUNT_EGLEX",
+         "EBBS_ACCOUNT,EBBS_ACCTPRV,EBBS_BEBAL,EBBS_MAST,EBBS_PRD,EBBS_PRVINFO,EBBS_CBALSTAT,EBBS_SEG"),
+        ("ACCT_BAL-EBBS-PMMKDEAL_EGLEX",
+         "EBBS_PMMKDEAL,EBBS_DEALPRV,EBBS_MAST,EBBS_MDELTYP,EBBS_PRD"),
+    ],
+    "prty_dependency_config.json": [
+        ("PRTY-EBBS-MAST_EGLEX",
+         "EBBS_MAST,EBBS_SEG,EBBS_INSTCLS,EBBS_ARM,EBBS_MSTINFO,ALT_PRTY,ALT_PRTY-SCI-LSPSYSXREF,M_SCB_ENTITY_XLATE"),
+        ("PRTY-EBBS-REL_EGLEX",
+         "EBBS_REL,EBBS_MAST,EBBS_RSKIND,EBBS_SEG,EBBS_INSTCLS,EBBS_CONST,EBBS_RELINFO,EBBS_MSTINFO,EBBS_MASTREL"),
+    ],
+    "prty_rtng_dependency_config.json": [
+        ("PRTY_RTNG-EBBS-MASTCRG_EGLEX", "EBBS_MAST"),
+    ],
+    "acct_lmt_rltd_dependency_config.json": [
+        ("ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_EGLEX", "EBBS_ACCOUNT,EBBS_LMTLNDT"),
+        ("ACCT_LMT_RLTD-EBBS-ACTVT-DEAL-LMTLNDT_EGLEX", "EBBS_LMTLNDT,EBBS_PMMKDEAL"),
+        ("ACCT_LMT_RLTD-EBBS-APPR-ACC-LMTLNDT_EGLEX",
+         "EBBS_ACCOUNT,EBBS_LMTLNDT,SCI_ALL_LSPAPRVDLMT,SCI_ALL_LSPCOBWRLMT"),
+        ("ACCT_LMT_RLTD-EBBS-APPR-ACC-SCIACTLMT_EGLEX",
+         "EBBS_ACCOUNT,ALT_PRTY-SCI-LSPSYSXREF,M_SCB_ENTITY_XLATE,M_SCI_XREF_XLATE,SCI_ALL_LSPACTLMT,SCI_ALL_LSPAPRVDLMT,SCI_ALL_LSPCOBOLMTACTLMTS,SCI_ALL_LSPCOBWRLMT"),
+        ("ACCT_LMT_RLTD-EBBS-APPR-DEAL-LMTLNDT_EGLEX",
+         "EBBS_LMTLNDT,EBBS_PMMKDEAL,SCI_ALL_LSPAPRVDLMT,SCI_ALL_LSPCOBWRLMT"),
+    ],
+    "actvt_lmt_dependency_config.json": [
+        ("ACTVT_LMT-EBBS-LMTLNDT_EGLEX",
+         "M_PRODUCT_XLATE,SCI_ALL_LSPAPRVDLMT,SCI_ALL_LSPCOBWRLMT,EBBS_LMTLNDT,EBBS_MAST,EBBS_LMTPRD,EBBS_SEG"),
+        ("ACTVT_LMT-EBBS-MLTMAST_EGLEX", "EBBS_MLTMAST,EBBS_SEG"),
+    ],
+    "prvsn_dependency_config.json": [
+        ("PRVSN-EBBS-CHOFF_EGLEX", "EBBS_ACCOUNT,EBBS_PRVINFO,EBBS_EXCRTL,EBBS_ODCLASS"),
+    ],
+    "sub_ldgr_dependency_config.json": [
+        ("SUB_LDGR-EBBS-FPSLBS_EGLEX", "FPSL_ACCOUNTING_BS,M_GL_PRODUCT_XLATE"),
+    ],
+}
+
+def format_entry(base_name, dependencies, country):
+    return (
+        f'    "{base_name}_{country}": {{\n'
+        f'        "dependencies": "{dependencies}",\n'
+        f'        "partition_details": "ods_val=${{ods_val_param}};country_val={country};tp_sys_val={TP_SYS};process_id_val={base_name}_ALL"\n'
+        f'    }}'
+    )
+
+for fname, services in services_by_file.items():
+    print(f"\n=== {fname} ===")
+    blocks = [format_entry(name, deps, c) for name, deps in services for c in COUNTRIES]
+    print(",\n".join(blocks))
