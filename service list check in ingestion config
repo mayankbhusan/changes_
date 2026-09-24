@@ -1,10 +1,12 @@
-import json
-import difflib
 from pathlib import Path
 
 COUNTRIES = ["BD", "PK"]
 
-BASE_DIR = Path("/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product")
+# Change this if dag_config_uat_refresh has no "ingestion" subfolder —
+# in that case upload ebbs_ingestion_config.csv next to this script
+# and set BASE_DIR = Path(".") instead.
+BASE_DIR = Path("/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/ingestion")
+EBBS_FILE = "ebbs_ingestion_config.csv"
 
 NEW_SERVICES = {
     "acct_dependency_config.json": [
@@ -41,47 +43,48 @@ NEW_SERVICES = {
     ],
 }
 
-def strip_country(key):
-    for c in COUNTRIES:
-        if key.endswith(f"_{c}"):
-            return key[: -(len(c) + 1)], c
-    return None, None
+def load_ebbs_rows(path):
+    rows = []
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            parts = line.rstrip("\r\n").split("|")
+            if len(parts) >= 5:
+                rows.append((parts[0], parts[4]))
+    return rows
 
-def tokens(dep_string):
-    return {t.strip() for t in dep_string.split(",") if t.strip()}
+def exists_for_country(rows, base_name, country):
+    prefix = f"EBBS_{country}_"
+    return any(f1.startswith(prefix) and name == base_name for f1, name in rows)
 
-for fname, new_entries in NEW_SERVICES.items():
-    path = BASE_DIR / fname
-    if not path.exists():
-        print(f"=== {fname}: NOT FOUND at {path} ===")
-        continue
+ebbs_path = BASE_DIR / EBBS_FILE
+if not ebbs_path.exists():
+    print(f"NOT FOUND: {ebbs_path}")
+    print("Upload ebbs_ingestion_config.csv next to this script and set BASE_DIR = Path('.') instead.")
+    raise SystemExit(1)
 
-    with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+rows = load_ebbs_rows(ebbs_path)
+print(f"Loaded {len(rows)} rows from {ebbs_path}\n")
 
-    known = {c: set() for c in COUNTRIES}
-    for key, val in data.items():
-        _, country = strip_country(key)
-        if country:
-            known[country] |= tokens(val.get("dependencies", ""))
-    all_known = known["BD"] | known["PK"]
+non_ebbs = set()
 
-    print(f"\n=== {fname} ===")
-    any_flag = False
-    for base_name, dep_string in new_entries:
-        draft_tokens = tokens(dep_string)
+for fname, services in NEW_SERVICES.items():
+    flags, checked = [], 0
+    for base_service_name, dep_string in services:
+        for token in (t.strip() for t in dep_string.split(",") if t.strip()):
+            if not token.startswith("EBBS_"):
+                non_ebbs.add(token)
+                continue
+            checked += 1
+            status = {c: exists_for_country(rows, token, c) for c in COUNTRIES}
+            if not all(status.values()):
+                summary = ", ".join(f"{c}={'Y' if v else 'MISSING'}" for c, v in status.items())
+                flags.append(f"  {base_service_name}: {token} — {summary}")
 
-        for u in sorted(draft_tokens - all_known):
-            any_flag = True
-            close = difflib.get_close_matches(u, all_known, n=1, cutoff=0.7)
-            hint = f" — closest existing match: '{close[0]}'" if close else " — no close match, may be genuinely new"
-            print(f"  {base_name}: '{u}' never appears in this file{hint}")
+    print(f"=== {fname}: {checked} EBBS_* tokens checked ===")
+    print("\n".join(flags) if flags else "  All EBBS_* tokens confirmed present for every country.")
+    print()
 
-        for country in COUNTRIES:
-            other = [c for c in COUNTRIES if c != country][0]
-            for t in sorted((draft_tokens - known[country]) & known[other]):
-                any_flag = True
-                print(f"  {base_name}_{country}: '{t}' exists under {other} here, not under {country} — confirm it should carry over")
-
-    if not any_flag:
-        print("  Every dependency name matches existing usage in this file.")
+if non_ebbs:
+    print(f"=== {len(non_ebbs)} non-EBBS tokens NOT checked (no matching ingestion file identified yet) ===")
+    for t in sorted(non_ebbs):
+        print(f"  {t}")
