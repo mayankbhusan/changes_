@@ -1,0 +1,16 @@
+Hi Pooja, UAT's hold files don't contain that service at all, so exit 20 was the right result there. Here's a self-contained check that uses UAT's own script with a throwaway hold file in /tmp, so nothing in UAT is touched:
+
+mkdir -p /tmp/holdtest/uat/data/mfu/incoming
+cat > /tmp/holdtest/uat/data/mfu/incoming/adm_hold_20260928.csv << 'EOF'
+TESTSVC_A_TW,daas,2025-01-01,2099-12-31,test country-specific hold,,,
+TESTSVC_B,daas,2025-01-01,2099-12-31,test bare hold,,,
+EOF
+sed 's#^BASE_NAS_PATH=.*#BASE_NAS_PATH=/tmp/holdtest#' /CTRLFW/FDP/uat/utils/fdp_adm_hold.sh > /tmp/holdtest/fdp_adm_hold_copy.sh
+for id in TESTSVC_A_TW TESTSVC_B TESTSVC_NOT_HELD; do
+  sh /tmp/holdtest/fdp_adm_hold_copy.sh uat daas "$id" "$(date +%Y-%m-%d)"
+  echo "$id -> exit $?"
+done
+
+Expected: TESTSVC_A_TW -> exit 10, TESTSVC_B -> exit 10, TESTSVC_NOT_HELD -> exit 20.
+
+If any result differs, rerun that one id with sh -x and send me the output. When you're finished: rm -rf /tmp/holdtest
