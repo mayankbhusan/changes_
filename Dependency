@@ -1,0 +1,8 @@
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank
+CFG=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion/ebbs_ingestion_config.csv
+
+tr -d '\r' < "new 8.txt" | grep -oP '"dependencies"\s*:\s*"\K[^"]+' | tr ',' '\n' | sed 's/^ *//;s/ *$//' | LC_ALL=C sort -u > deps.txt
+cut -d'|' -f1 "$CFG" | tr -d '\r' | LC_ALL=C sort -u > cfg_keys.txt
+
+echo "=== MISSING in ebbs_ingestion_config.csv ==="; LC_ALL=C comm -23 deps.txt cfg_keys.txt
+echo "=== FOUND ==="; LC_ALL=C comm -12 deps.txt cfg_keys.txt
