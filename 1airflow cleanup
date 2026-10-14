@@ -33,6 +33,12 @@ python db_check.py
 
 airflow db clean --clean-before-timestamp "2026-04-18" --dry-run --verbose
 
+
+airflow db clean --clean-before-timestamp "2026-04-18" --dry-run --verbose 2>&1 | grep -E "Checking table|Found" > dry_run_summary.txt
+cat dry_run_summary.txt
+======================================================================
+-----airflow db clean --clean-before-timestamp "2026-04-18" --verbose
+
 SELECT tablename FROM pg_tables WHERE tablename LIKE '\_airflow\_deleted\_\_%';
 
 SELECT has_table_privilege(current_user, 'task_instance', 'DELETE');
