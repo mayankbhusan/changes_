@@ -1,14 +1,35 @@
-SELECT relname, n_live_tup,
-       pg_size_pretty(pg_total_relation_size(relid)) AS total_size
-FROM pg_stat_user_tables
-ORDER BY pg_total_relation_size(relid) DESC
-LIMIT 15;
+cd test_mayank
+cat > db_check.py <<'EOF'
+from airflow.settings import Session
+from sqlalchemy import text
 
-SELECT 'dag_run' t, count(*) FROM dag_run WHERE start_date < now() - interval '180 days'
-UNION ALL SELECT 'task_instance', count(*) FROM task_instance WHERE start_date < now() - interval '180 days'
-UNION ALL SELECT 'log', count(*) FROM log WHERE dttm < now() - interval '180 days'
-UNION ALL SELECT 'xcom', count(*) FROM xcom WHERE timestamp < now() - interval '180 days'
-UNION ALL SELECT 'job', count(*) FROM job WHERE latest_heartbeat < now() - interval '180 days';
+s = Session()
+
+print("--- Biggest tables ---")
+for r in s.execute(text("""
+    SELECT relname, n_live_tup,
+           pg_size_pretty(pg_total_relation_size(relid)) AS total_size
+    FROM pg_stat_user_tables
+    WHERE schemaname = current_schema()
+    ORDER BY pg_total_relation_size(relid) DESC
+    LIMIT 15
+""")):
+    print(r)
+
+print("--- Rows older than 180 days ---")
+for r in s.execute(text("""
+    SELECT 'dag_run' t, count(*) FROM dag_run WHERE start_date < now() - interval '180 days'
+    UNION ALL SELECT 'task_instance', count(*) FROM task_instance WHERE start_date < now() - interval '180 days'
+    UNION ALL SELECT 'task_instance_history', count(*) FROM task_instance_history WHERE start_date < now() - interval '180 days'
+    UNION ALL SELECT 'log', count(*) FROM log WHERE dttm < now() - interval '180 days'
+    UNION ALL SELECT 'xcom', count(*) FROM xcom WHERE timestamp < now() - interval '180 days'
+    UNION ALL SELECT 'job', count(*) FROM job WHERE latest_heartbeat < now() - interval '180 days'
+""")):
+    print(r)
+EOF
+python db_check.py
+
+
 
 airflow db clean --clean-before-timestamp "2026-04-15" --dry-run --verbose
 
