@@ -1,0 +1,17 @@
+SELECT relname, n_live_tup,
+       pg_size_pretty(pg_total_relation_size(relid)) AS total_size
+FROM pg_stat_user_tables
+ORDER BY pg_total_relation_size(relid) DESC
+LIMIT 15;
+
+SELECT 'dag_run' t, count(*) FROM dag_run WHERE start_date < now() - interval '180 days'
+UNION ALL SELECT 'task_instance', count(*) FROM task_instance WHERE start_date < now() - interval '180 days'
+UNION ALL SELECT 'log', count(*) FROM log WHERE dttm < now() - interval '180 days'
+UNION ALL SELECT 'xcom', count(*) FROM xcom WHERE timestamp < now() - interval '180 days'
+UNION ALL SELECT 'job', count(*) FROM job WHERE latest_heartbeat < now() - interval '180 days';
+
+airflow db clean --clean-before-timestamp "2026-04-15" --dry-run --verbose
+
+SELECT tablename FROM pg_tables WHERE tablename LIKE '\_airflow\_deleted\_\_%';
+
+SELECT has_table_privilege(current_user, 'task_instance', 'DELETE');
