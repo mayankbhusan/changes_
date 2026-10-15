@@ -7,7 +7,9 @@ grep -nE "dag_id|schedule|task_id|default_args|on_failure|email" <that_file>.py
 grep -rliE "house_keeping|hive_hygine|\.sh" $DAGS --include=*.py | head -20
 
 
-
+cd /CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dags
+grep -nE "dag_id|schedule|task_id|default_args|on_failure|email|\.sh|>>" fdp_housekeeping_dag.py
+grep -nE "dag_id|schedule|task_id|default_args|on_failure|email|\.sh|>>|db clean|DELETE|VACUUM|psql" airflow_log_maintenance.py
 
 
 
