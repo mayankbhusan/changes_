@@ -1,3 +1,32 @@
+DAGS=$(airflow config get-value core dags_folder)
+echo $DAGS
+grep -rl "housekeeping" $DAGS --include=*.py
+
+grep -nE "dag_id|schedule|task_id|default_args|on_failure|email" <that_file>.py
+
+grep -rliE "house_keeping|hive_hygine|\.sh" $DAGS --include=*.py | head -20
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+====================================================================
 cd test_mayank
 cat > db_check.py <<'EOF'
 from airflow.settings import Session
