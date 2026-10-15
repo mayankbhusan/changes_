@@ -33,7 +33,10 @@ with settings.engine.connect().execution_options(isolation_level="AUTOCOMMIT") a
 print("VACUUM ANALYZE OK")
 
 
-
+cd /CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dags
+sed -n '1,30p' airflow_log_maintenance.py
+sed -n '205,222p' airflow_log_maintenance.py
+sed -n '268,285p' airflow_log_maintenance.py
 
 
 
