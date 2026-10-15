@@ -41,7 +41,64 @@ sed -n '268,285p' airflow_log_maintenance.py
 
 
 
+from datetime import datetime, timedelta, timezone
 
+from airflow import DAG, settings
+from airflow.models import Variable
+from airflow.operators.python import PythonOperator
+from airflow.utils.db_cleanup import run_cleanup
+
+DB_TABLES = [
+    "dag_run", "dataset_event", "import_error", "job", "log", "session",
+    "sla_miss", "task_fail", "task_instance", "task_instance_history",
+    "task_reschedule", "trigger", "xcom", "callback_request",
+]
+
+
+def _db_tables():
+    raw = Variable.get("db_cleanup_tables", default_var=",".join(DB_TABLES))
+    return [t.strip() for t in raw.split(",") if t.strip()]
+
+
+def airflow_db_clean(**_):
+    days = int(Variable.get("db_cleanup_retention_days", default_var="180"))
+    if days < 30:
+        raise ValueError(f"db_cleanup_retention_days={days} is below the safety minimum of 30")
+    dry_run = Variable.get("db_cleanup_dry_run", default_var="true").lower() == "true"
+    skip_archive = Variable.get("db_cleanup_skip_archive", default_var="true").lower() == "true"
+    tables = _db_tables()
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    print(f"[INFO] db clean: cutoff={cutoff} dry_run={dry_run} skip_archive={skip_archive} tables={tables}")
+    run_cleanup(
+        clean_before_timestamp=cutoff,
+        table_names=tables,
+        dry_run=dry_run,
+        verbose=False,
+        confirm=False,
+        skip_archive=skip_archive,
+    )
+
+
+def vacuum_analyze(**_):
+    if Variable.get("db_cleanup_dry_run", default_var="true").lower() == "true":
+        print("[INFO] dry run, skipping VACUUM ANALYZE")
+        return
+    with settings.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        for t in _db_tables():
+            conn.exec_driver_sql(f'VACUUM ANALYZE "{t}"')  # raises on failure so the task fails
+            print(f"[INFO] VACUUM ANALYZE done: {t}")
+
+
+with DAG(
+    dag_id="airflow_db_cleanup_mayank_test",
+    start_date=datetime(2025, 1, 1),
+    schedule_interval=None,
+    catchup=False,
+    max_active_runs=1,
+) as dag:
+    clean = PythonOperator(task_id="airflow_db_clean", python_callable=airflow_db_clean)
+    vac = PythonOperator(task_id="vacuum_analyze", python_callable=vacuum_analyze)
+    clean >> vac
 
 
 
