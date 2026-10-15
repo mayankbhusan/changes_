@@ -11,7 +11,26 @@ cd /CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dags
 grep -nE "dag_id|schedule|task_id|default_args|on_failure|email|\.sh|>>" fdp_housekeeping_dag.py
 grep -nE "dag_id|schedule|task_id|default_args|on_failure|email|\.sh|>>|db clean|DELETE|VACUUM|psql" airflow_log_maintenance.py
 
+from datetime import datetime, timedelta, timezone
+from airflow import settings
+from airflow.utils.db_cleanup import run_cleanup
 
+cutoff = datetime.now(timezone.utc) - timedelta(days=180)
+
+print("--- 1. Dry run of db clean (deletes nothing) ---")
+run_cleanup(
+    clean_before_timestamp=cutoff,
+    table_names=["log", "job", "task_instance", "task_instance_history", "xcom", "task_fail", "dag_run"],
+    dry_run=True,
+    verbose=False,
+    confirm=False,
+    skip_archive=True,
+)
+
+print("--- 2. VACUUM ANALYZE on the small 'session' table only ---")
+with settings.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+    conn.exec_driver_sql('VACUUM ANALYZE "session"')
+print("VACUUM ANALYZE OK")
 
 
 
