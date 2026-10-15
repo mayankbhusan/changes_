@@ -101,7 +101,14 @@ with DAG(
     clean >> vac
 
 
-
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE
+python - <<'EOF'
+import airflow_db_cleanup_test as t
+print("--- airflow_db_clean ---")
+t.airflow_db_clean()
+print("--- vacuum_analyze ---")
+t.vacuum_analyze()
+EOF
 
 
 
