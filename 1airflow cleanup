@@ -36,6 +36,15 @@ airflow db clean --clean-before-timestamp "2026-04-18" --dry-run --verbose
 
 airflow db clean --clean-before-timestamp "2026-04-18" --dry-run --verbose 2>&1 | grep -E "Checking table|Found" > dry_run_summary.txt
 cat dry_run_summary.txt
+
+
+for r in s.execute(text("""
+    SELECT tablename, tableowner FROM pg_tables
+    WHERE schemaname = current_schema()
+      AND tablename IN ('dag_run','task_instance','task_instance_history','log','job','xcom','task_fail','task_reschedule','session')
+""")):
+    print(r)
+print(s.execute(text("SELECT current_user")).scalar())
 ======================================================================
 -----airflow db clean --clean-before-timestamp "2026-04-18" --verbose
 
