@@ -1,3 +1,14 @@
+   sed -i 's/|Sun|/|Fri|/; s/|10|/|180|/' test_db.cfg
+   cat test_db.cfg
+   bash harness.sh 2>&1 | grep -v SAWarning | tail -40
+
+   sed -i 's/|180|/|10|/' test_db.cfg
+   bash harness.sh 2>&1 | grep -v SAWarning
+
+   sed -i 's/|Fri|/|Mon|/' test_db.cfg
+   bash harness.sh
+
+
 {
 cat <<'EOF'
 env_lower=dev
