@@ -1,0 +1,19 @@
+printf '%s\n' 'env_lower=dev' 'loginfo(){ echo "[LOGINFO] $*"; }' 'handle_error(){ echo "[HANDLE_ERROR] $*"; }' 'cat test_db.cfg | grep -v "^#" | while read line' 'do' '  loginfo "start processing ${line}"' > harness.sh
+
+sed -n '95,138p' /CTRLFW/FDP/dev/housekeeping/housekeeping.sh >> harness.sh
+
+printf '%s\n' '  echo "BUG: reached the HDFS part"' 'done' >> harness.sh
+
+bash -n harness.sh && echo SYNTAX_OK
+
+cat test_db.cfg
+
+sed -i 's/|Mon|/|Fri|/' test_db.cfg && cat test_db.cfg
+
+bash harness.sh 2>&1 | grep -v SAWarning
+
+sed -i 's/|10|/|180|/' test_db.cfg
+
+bash harness.sh 2>&1 | grep -v SAWarning | tail -5
+
+bash -n /CTRLFW/FDP/dev/housekeeping/housekeeping.sh && echo SYNTAX_OK
