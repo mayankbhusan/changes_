@@ -51,8 +51,11 @@ if not dry_run:
             print(f"[INFO] VACUUM ANALYZE done: {t}")
 
 
-
-
+run_day=`echo ${line} | cut -d '|' -f4`
+if [[ "${run_day}" != "ALL" && "${run_day}" != "$(date +%a)" ]]; then
+    loginfo "DB cleanup skipped, scheduled for ${run_day} only"
+    continue
+fi
 
 
 
