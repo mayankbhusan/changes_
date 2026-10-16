@@ -8,6 +8,11 @@
    sed -i 's/|Fri|/|Mon|/' test_db.cfg
    bash harness.sh
 
+        then
+            handle_error "DB cleanup python block failed" "Housekeeping Script Failure: DB Cleanup" 0
+        else
+            loginfo "AIRFLOW_DB cleanup finished"
+        fi
 
 {
 cat <<'EOF'
