@@ -2,6 +2,10 @@ cd /CTRLFW/FDP/dev/housekeeping
 grep -v '^#' config/housekeeping.cfg | awk -F'[,|]' '{print NF" fields | "$2" | "$3" | "$5" | "$6}' | sort | uniq -c | head -30
 cat /CTRLFW/FDP/dev/tools_v2/UAT_cleanup/housekeeping_commands.sh | head -40
 
+cat /CTRLFW/FDP/dev/tools/UAT_cleanup/housekeeping_commands.sh | head -40
+grep -v '^#' /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg | head -3
+grep -rn "housekeeping.sh" /CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dags/*.py | head
+
 db_cleanup|NA|DRYRUN|NA|180|AIRFLOW_DB
 
     file_type=`echo ${line} | cut -d '|' -f6`
