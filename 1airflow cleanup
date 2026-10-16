@@ -1,4 +1,25 @@
-        loginfo "AIRFLOW_DB cleanup started: keep ${db_days} days, mode ${db_mode}"
+{
+cat <<'EOF'
+env_lower=dev
+loginfo(){ echo "[LOGINFO] $*"; }
+handle_error(){ echo "[HANDLE_ERROR] $*"; }
+cat test_db.cfg | grep -v '^#' | while read line
+do
+  loginfo "start processing ${line}"
+EOF
+sed -n '95,137p' /CTRLFW/FDP/dev/housekeeping/housekeeping.sh
+echo '  echo "BUG: reached the HDFS part, the block did not continue"'
+echo 'done'
+} > harness.sh
+bash -n harness.sh && echo SYNTAX_OK
+
+bash harness.sh 2>&1 | grep -v SAWarning | tail -40
+
+sed -i 's/|Fri|/|Mon|/' test_db.cfg && bash harness.sh
+
+sed -i 's/|Mon|/|Fri|/; s/|180|/|10|/' test_db.cfg && bash harness.sh 2>&1 | grep -v SAWarning
+
+loginfo "AIRFLOW_DB cleanup started: keep ${db_days} days, mode ${db_mode}"
         PY_BIN=/CTRLFW/FDP/${env_lower}/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python
         if ! ${PY_BIN} - ${db_days} ${db_mode} <<'PYEOF'
 import sys
