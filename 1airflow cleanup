@@ -1,3 +1,36 @@
+        loginfo "AIRFLOW_DB cleanup started: keep ${db_days} days, mode ${db_mode}"
+        PY_BIN=/CTRLFW/FDP/${env_lower}/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python
+        if ! ${PY_BIN} - ${db_days} ${db_mode} <<'PYEOF'
+import sys
+from datetime import datetime, timedelta, timezone
+from airflow import settings
+from airflow.utils.db_cleanup import run_cleanup
+
+TABLES = ["dag_run", "dataset_event", "import_error", "job", "log", "session",
+          "sla_miss", "task_fail", "task_instance", "task_instance_history",
+          "task_reschedule", "trigger", "xcom", "callback_request"]
+
+days = int(sys.argv[1])
+dry_run = sys.argv[2].upper() != "EXECUTE"
+if days < 30:
+    sys.exit("retention below safety minimum of 30")
+
+cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+print("[INFO] cutoff=%s dry_run=%s" % (cutoff, dry_run))
+run_cleanup(clean_before_timestamp=cutoff, table_names=TABLES,
+            dry_run=dry_run, verbose=False, confirm=False, skip_archive=True)
+
+if not dry_run:
+    with settings.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        for t in TABLES:
+            conn.exec_driver_sql('VACUUM ANALYZE "%s"' % t)
+            print("[INFO] VACUUM ANALYZE done: %s" % t)
+PYEOF
+        then
+            handle_error "DB cleanup python block failed" "Housekeeping Script Failure: DB Cleanup" 0
+        fi
+
+
 cd /CTRLFW/FDP/dev/housekeeping
 grep -v '^#' config/housekeeping.cfg | awk -F'[,|]' '{print NF" fields | "$2" | "$3" | "$5" | "$6}' | sort | uniq -c | head -30
 cat /CTRLFW/FDP/dev/tools_v2/UAT_cleanup/housekeeping_commands.sh | head -40
