@@ -6,7 +6,7 @@ cat /CTRLFW/FDP/dev/tools/UAT_cleanup/housekeeping_commands.sh | head -40
 grep -v '^#' /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg | head -3
 grep -rn "housekeeping.sh" /CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dags/*.py | head
 
-db_cleanup|NA|DRYRUN|NA|180|AIRFLOW_DB
+db_cleanup|NA|NA|NA|180|AIRFLOW_DB|Sun|DRYRUN|NA|
 
     file_type=`echo ${line} | cut -d '|' -f6`
     if [[ "${file_type}" == "AIRFLOW_DB" ]]; then
