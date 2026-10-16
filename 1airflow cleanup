@@ -57,7 +57,48 @@ if [[ "${run_day}" != "ALL" && "${run_day}" != "$(date +%a)" ]]; then
     continue
 fi
 
+    db_type=`echo ${line} | cut -d '|' -f6`
+    if [[ "${db_type}" == "AIRFLOW_DB" ]]; then
+        db_mode=`echo ${line} | cut -d '|' -f3`
+        db_day=`echo ${line} | cut -d '|' -f4`
+        db_days=`echo ${line} | cut -d '|' -f5`
+        if [[ "${db_day}" != "ALL" && "${db_day}" != "$(date +%a)" ]]; then
+            loginfo "AIRFLOW_DB cleanup skipped, scheduled for ${db_day} only"
+            continue
+        fi
+        loginfo "AIRFLOW_DB cleanup started: keep ${db_days} days, mode ${db_mode}"
+        PY_BIN=/CTRLFW/FDP/${env_lower}/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python
+        if ! ${PY_BIN} ${SCRIPTDIR}/db_cleanup.py ${db_days} ${db_mode}; then
+            handle_error "db_cleanup.py failed" "Housekeeping Script Failure: DB Cleanup" 0
+        fi
+        loginfo "AIRFLOW_DB cleanup finished"
+        continue
+    fi
 
+import sys
+from datetime import datetime, timedelta, timezone
+from airflow import settings
+from airflow.utils.db_cleanup import run_cleanup
+
+TABLES = ["dag_run", "dataset_event", "import_error", "job", "log", "session",
+          "sla_miss", "task_fail", "task_instance", "task_instance_history",
+          "task_reschedule", "trigger", "xcom", "callback_request"]
+
+days = int(sys.argv[1])
+dry_run = sys.argv[2].upper() != "EXECUTE"
+if days < 30:
+    sys.exit(f"retention {days} is below the safety minimum of 30")
+
+cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+print(f"[INFO] cutoff={cutoff} dry_run={dry_run}")
+run_cleanup(clean_before_timestamp=cutoff, table_names=TABLES,
+            dry_run=dry_run, verbose=False, confirm=False, skip_archive=True)
+
+if not dry_run:
+    with settings.engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
+        for t in TABLES:
+            conn.exec_driver_sql(f'VACUUM ANALYZE "{t}"')
+            print(f"[INFO] VACUUM ANALYZE done: {t}")
 
 
 
