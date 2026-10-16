@@ -17,3 +17,22 @@ sed -i 's/|10|/|180|/' test_db.cfg
 bash harness.sh 2>&1 | grep -v SAWarning | tail -5
 
 bash -n /CTRLFW/FDP/dev/housekeeping/housekeeping.sh && echo SYNTAX_OK
+
+
+cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE
+/CTRLFW/FDP/dev/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python db_check.py 2>&1 | grep -v SAWarning > before_exec.txt
+cat before_exec.txt
+
+   cd /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE
+   sed -i 's/skip_archive=True/skip_archive=False/' harness.sh
+   grep -n skip_archive harness.sh
+
+   sed -i 's/|DRYRUN|/|EXECUTE|/' test_db.cfg
+   cat test_db.cfg
+
+   bash harness.sh 2>&1 | grep -v SAWarning | tee exec_run.log | tail -45
+
+   /CTRLFW/FDP/dev/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python db_check.py 2>&1 | grep -v SAWarning > after_exec.txt
+   diff before_exec.txt after_exec.txt
+
+airflow db drop-archived
