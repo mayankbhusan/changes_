@@ -1,3 +1,65 @@
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion/ebbs_ingestion_config.csv
+OUT=/CTRLFW/FDP/dev/ingestion/scripts/test_mayank/PR_changes_notes.txt
+
+python3 - "$D" "$ING" "$OUT" <<'EOF'
+import re, json, glob, sys
+D, ING, OUT = sys.argv[1:4]
+csvk = {l.split('|')[0].strip() for l in open(ING)}
+allk = set(csvk)
+def walk(o):
+    if isinstance(o, dict):
+        for k, v in o.items(): allk.add(k); walk(v)
+for f in glob.glob(D + '/*_dependency_config.json'):
+    try: walk(json.load(open(f)))
+    except Exception as e: print('BAD JSON', f, e)
+
+plan = [
+ ('acct_lmt_rltd_dependency_config.json', ['ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_EGLEX_MY', 'ACCT_LMT_RLTD-EBBS-ACTVT-DEAL-LMTLNDT_EGLEX_MY']),
+ ('sub_ldgr_dependency_config.json', ['SUB_LDGR-EBBS-FPSLBS_EGLEX_ID', 'SUB_LDGR-EBBS-FPSLBS_EGLEX_MY']),
+ ('pe_bal_dependency_config.json', ['PE_BAL-EBBS-FPSLBS_EGLEX_MY']),
+ ('prty_rtng_dependency_config.json', ['PRTY_RTNG-EBBS-MASTCRG_EGLEX_MY']),
+ ('acct_dependency_config.json', ['ACCT-EBBS-ACCOUNT_EGLEX_MY', 'ACCT-EBBS-PMMKDEAL_EGLEX_MY']),
+ ('prvsn_dependency_config.json', ['PRVSN-EBBS-CHOFF_EGLEX_MY']),
+ ('prty_dependency_config.json', ['PRTY-EBBS-MAST_EGLEX_MY']),
+]
+out, checks = ['#PR CHANGES (generated from dev files)\n'], []
+for n, (fn, keys) in enumerate(plan, 1):
+    s = open(D + '/' + fn).read()
+    out.append('\n%d. %s\n' % (n, fn))
+    for k in keys:
+        pat = r'^[ \t]*"%s"\s*:\s*\{' % re.escape(k)
+        ms = list(re.finditer(pat, s, re.M))
+        if not ms:
+            out.append('\n   !!! %s NOT FOUND\n' % k); checks.append('%s: NOT FOUND in %s' % (k, fn)); continue
+        m = ms[0]; j = s.index('{', m.end() - 1); depth = 0
+        while True:
+            depth += s[j] == '{'; depth -= s[j] == '}'
+            if depth == 0: break
+            j += 1
+        blk = s[m.start():j + 1]
+        out.append('\n' + blk + '\n')
+        if len(ms) > 1: checks.append('%s: DUPLICATE x%d in %s (remove extra before PR)' % (k, len(ms), fn))
+        deps = json.loads('{' + blk + '}')[k]['dependencies'].split(',')
+        bad = [x.strip() for x in deps if x.strip() not in allk]
+        wrongMY = [x.strip() for x in deps if re.match(r'EBBS_MY_EBBS_MY_(ACCINFO|ACINTHIS|ACODINFO|EXCRTL|INTCURR|INTDTL|INTPL|MLTMAST|REASON)$', x.strip())]
+        if bad: checks.append('%s: not found anywhere: %s' % (k, bad))
+        if wrongMY: checks.append('%s: still has extra MY_: %s' % (k, wrongMY))
+out.append('\n\n#SELF-CHECK (empty = all good)\n')
+out += ['  ' + c + '\n' for c in checks] or ['  all dependencies resolved, no duplicates\n']
+open(OUT, 'w').write(''.join(out))
+print(''.join(out[-(len(checks) or 1) - 1:]))
+print('written:', OUT)
+EOF
+
+
+
+
+
+
+
+
+
 ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
 grep -n "ACCT_LMT_RLTD-EBBS-ACTVT" $ING/*.csv | cut -c1-200
 
