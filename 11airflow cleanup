@@ -1,3 +1,10 @@
+A=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home
+grep -rIl "ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_EGLEX_ID" $A --exclude="*.bak*" 2>/dev/null
+echo "-----"
+sed -n '100,135p' $A/dags/fdp_products_dag_testxyz.py
+
+
+
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 grep -c '"ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_EGLEX_MY"' $D/acct_lmt_rltd_dependency_config.json
 grep -c '"ACCT-EBBS-PMMKDEAL_EGLEX_MY"' $D/acct_dependency_config.json
