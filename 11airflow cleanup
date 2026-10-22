@@ -1,3 +1,5 @@
+grep -c "23 Oct 2026" /var/spool/mail/g.fdpdev.001.dev
+mailq | tail -20
 grep -n "^Subject:\|^From:\|^To:\|^Date:" /var/spool/mail/g.fdpdev.001.dev | tail -12
 
 LOGDIR=$(ls -d /CTRLFW/FDP/dev/logs/House_Keeping/20* | tail -1); grep -rh "ALERT\|AIRFLOW_DB" $LOGDIR | grep -v "+ echo\|+ loginfo" | head
