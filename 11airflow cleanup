@@ -1,3 +1,11 @@
+echo "--- 1. where validation.sh copies the cfg from ---"; grep -n -i "cp \|housekeeping.cfg\|mfu" /CTRLFW/FDP/dev/housekeeping/validation.sh | head -20
+echo "--- 2. handle_error in dev copy ---"; grep -n -A10 "handle_error()" /CTRLFW/FDP/dev/housekeeping/housekeeping.sh
+echo "--- 3. db_cleanup line in dev cfg ---"; grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+echo "--- 4. block present in dev script (expect 2 or more) ---"; grep -c "AIRFLOW_DB" /CTRLFW/FDP/dev/housekeeping/housekeeping.sh
+echo "--- 5. latest housekeeping log folders ---"; ls -d /CTRLFW/FDP/dev/logs/House_Keeping/* | tail -3
+
+
+
 printf '%s\n' 'env_lower=dev' 'loginfo(){ echo "[LOGINFO] $*"; }' 'handle_error(){ echo "[HANDLE_ERROR] $*"; }' 'cat test_db.cfg | grep -v "^#" | while read line' 'do' '  loginfo "start processing ${line}"' > harness.sh
 
 sed -n '95,138p' /CTRLFW/FDP/dev/housekeeping/housekeeping.sh >> harness.sh
