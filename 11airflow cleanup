@@ -1,3 +1,16 @@
+CFG=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion/ebbs_ingestion_config.csv
+JSON=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product/acct_dependency_config.json
+
+cut -d'|' -f1 "$CFG" | tr -d '\r' | LC_ALL=C sort -u > cfg_keys.txt
+sed -n '1275,1277p' "$JSON" | tr -d '\r' | grep -oP '"dependencies"\s*:\s*"\K[^"]+' | tr ',' '\n' | sed 's/^ *//;s/ *$//' | LC_ALL=C sort -u > deps_my.txt
+
+echo "=== MISSING in CSV ==="; LC_ALL=C comm -23 deps_my.txt cfg_keys.txt
+echo "=== FOUND ===";          LC_ALL=C comm -12 deps_my.txt cfg_keys.txt
+
+
+
+
+
 ls -lt /CTRLFW/FDP/dev/data/mfu/incoming/ | head -5
 ls -d /CTRLFW/FDP/dev/logs/House_Keeping/20* | tail -3
 
