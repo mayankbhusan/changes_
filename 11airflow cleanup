@@ -1,3 +1,23 @@
+CFG=/CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+if ls /CTRLFW/FDP/dev/data/mfu/incoming/nabi*.csv >/dev/null 2>&1; then
+  echo "STOP: nabi csv present, cfg would be overwritten"; ls -lt /CTRLFW/FDP/dev/data/mfu/incoming/ | head -5
+else
+  cp $CFG /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_e2e
+  sed -i 's/^#\{0,1\}db_cleanup|NA|NA|NA|180|AIRFLOW_DB|Sun|DRYRUN|NA|$/db_cleanup|NA|NA|NA|180|AIRFLOW_DB|ALL|EXECUTE|NA|/' $CFG
+  grep -n "db_cleanup" $CFG
+  ls -l /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_e2e
+fi
+
+
+LOGDIR=$(ls -d /CTRLFW/FDP/dev/logs/House_Keeping/20* | tail -1); echo $LOGDIR; grep -rh "INFO : AIRFLOW_DB\|ALERT\|VACUUM ANALYZE done\|cutoff=" $LOGDIR | grep -v "+ echo\|+ loginfo" | head -40
+
+cp /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_e2e /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+
+
+
+
+
 LOGDIR=$(ls -d /CTRLFW/FDP/dev/logs/House_Keeping/20* | tail -1); echo $LOGDIR; grep -rn "AIRFLOW_DB\|ALERT" $LOGDIR | head -40
 cp /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_e2e /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
 grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
