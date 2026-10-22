@@ -1,3 +1,7 @@
+LOGDIR=$(ls -d /CTRLFW/FDP/dev/logs/House_Keeping/20* | tail -1); grep -rh "ALERT\|AIRFLOW_DB" $LOGDIR | grep -v "+ echo\|+ loginfo" | head
+cp /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_emailtest /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+
 
    CFG=/CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
    cp $CFG /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_emailtest
