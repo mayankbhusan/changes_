@@ -1,3 +1,13 @@
+ls -lt /CTRLFW/FDP/dev/data/mfu/incoming/ | head -5
+ls -d /CTRLFW/FDP/dev/logs/House_Keeping/20* | tail -3
+
+cp /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_e2e
+sed -i 's/^db_cleanup|NA|NA|NA|180|AIRFLOW_DB|Sun|DRYRUN|NA|$/db_cleanup|NA|NA|NA|180|AIRFLOW_DB|Thu|EXECUTE|NA|/' /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+
+
+
+
 echo "--- 1. where validation.sh copies the cfg from ---"; grep -n -i "cp \|housekeeping.cfg\|mfu" /CTRLFW/FDP/dev/housekeeping/validation.sh | head -20
 echo "--- 2. handle_error in dev copy ---"; grep -n -A10 "handle_error()" /CTRLFW/FDP/dev/housekeeping/housekeeping.sh
 echo "--- 3. db_cleanup line in dev cfg ---"; grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
