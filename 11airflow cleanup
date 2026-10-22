@@ -1,3 +1,11 @@
+LOGDIR=$(ls -d /CTRLFW/FDP/dev/logs/House_Keeping/20* | tail -1); echo $LOGDIR; grep -rn "AIRFLOW_DB\|ALERT" $LOGDIR | head -40
+cp /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/housekeeping.cfg.bak_before_e2e /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+
+
+
+
+
 N=/CTRLFW/FDP/dev/ingestion/scripts/test_mayank
 python3 - "$N/PR_changes_notes.txt" "$N/PR_notes_clean.txt" <<'EOF'
 import re, sys
