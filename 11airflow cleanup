@@ -1,5 +1,81 @@
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
+TS=$(date +%Y%m%d%H%M)
+cp $D/acct_dependency_config.json $D/acct_dependency_config.json.bak2_$TS
+cp $D/prvsn_dependency_config.json $D/prvsn_dependency_config.json.bak2_$TS
+
+python3 - "$D" "$ING" <<'EOF'
+import json, re, sys, glob, difflib
+d, ing = sys.argv[1:3]
+keys = {l.split('|')[0].strip() for l in open(ing + '/ebbs_ingestion_config.csv')}
+
+def conv(x):
+    m = re.fullmatch(r'EBBS_ID_EBBS_ID_(\w+)', x)
+    if m: return 'EBBS_MY_EBBS_' + m.group(1)
+    m = re.fullmatch(r'EBBS_DF_ID_EBBS_(\w+)', x)
+    if m:
+        c = 'EBBS_DF_MY_EBBS_' + m.group(1)
+        return c if c in keys else 'EBBS_MY_EBBS_' + m.group(1)
+    return x
+
+def add_my(path, id_key, my_key):
+    s = open(path).read()
+    if re.search(r'"%s"\s*:\s*\{' % re.escape(my_key), s):
+        print(my_key, 'already exists, skipped'); return
+    m = re.search(r'"%s"\s*:\s*\{' % re.escape(id_key), s)
+    if not m: print('ID block not found:', id_key); return
+    i, o = m.start(), m.end() - 1
+    depth, j = 0, o
+    while True:
+        c = s[j]
+        if c == '{': depth += 1
+        elif c == '}':
+            depth -= 1
+            if depth == 0: break
+        j += 1
+    obj = json.loads('{' + s[i:j+1] + '}')[id_key]
+    deps = [conv(x.strip()) for x in obj['dependencies'].split(',')]
+    for x in deps:
+        if x.startswith('EBBS_') and x not in keys: print('  WARNING not in CSV:', x)
+    part = obj['partition_details'].replace('country_val=ID', 'country_val=MY')
+    ls = s.rfind('\n', 0, i) + 1
+    ind = s[ls:i]
+    blk = (ind + '"%s": {\n' % my_key + ind + '    "dependencies":\n' + ind + '    "%s",\n' % ','.join(deps) +
+           ind + '    "partition_details": "%s"\n' % part + ind + '}')
+    s = s[:j+2] + '\n' + blk + ',' + s[j+2:] if s[j+1] == ',' else s[:j+1] + ',\n' + blk + s[j+1:]
+    json.loads(s)
+    open(path, 'w').write(s)
+    print('added', my_key, '->', ','.join(deps))
+
+add_my(d + '/acct_dependency_config.json', 'ACCT-EBBS-PMMKDEAL_EGLEX_ID', 'ACCT-EBBS-PMMKDEAL_EGLEX_MY')
+add_my(d + '/prvsn_dependency_config.json', 'PRVSN-EBBS-CHOFF_EGLEX_ID', 'PRVSN-EBBS-CHOFF_EGLEX_MY')
+
+# re-check PE_BAL dependencies against all keys
+allk, blk = set(keys), None
+def walk(o):
+    global blk
+    if isinstance(o, dict):
+        for k, v in o.items():
+            allk.add(k)
+            if k == 'PE_BAL-EBBS-FPSLBS_EGLEX_MY': blk = v
+            walk(v)
+for f in glob.glob(d + '/*_dependency_config.json'): walk(json.load(open(f)))
+miss = [x.strip() for x in blk['dependencies'].split(',') if x.strip() not in allk]
+print('PE_BAL still missing:', miss)
+EOF
+
+echo "--- duplicate DEAL key lines ---"
+grep -n '"ACCT_LMT_RLTD-EBBS-ACTVT-DEAL-LMTLNDT_EGLEX_MY"' $D/acct_lmt_rltd_dependency_config.json
+
+
+
+
+
+
+
+
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
 F=$D/acct_lmt_rltd_dependency_config.json
 cp "$F" "$F.bak_$(date +%Y%m%d%H%M)"
 
