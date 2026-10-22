@@ -1,3 +1,8 @@
+ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
+grep -n "ACCT_LMT_RLTD-EBBS-ACTVT" $ING/*.csv | cut -c1-200
+
+
+
 A=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home
 grep -n "ingestion_data\|product_data\|json.load\|open(\|\.csv\|\.json\|dag_config" $A/dags/fdp_products_dag_testxyz.py | head -40
 
