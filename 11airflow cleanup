@@ -1,3 +1,7 @@
+clear; LOGDIR=/CTRLFW/FDP/dev/logs/House_Keeping/2026_10_23; grep -rh "INFO : AIRFLOW_DB\|ALERT\|VACUUM ANALYZE done\|cutoff=" $LOGDIR | grep -v "+ echo\|+ loginfo"; mailq 2>/dev/null | tail -1; grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
+clear; grep -rh "AIRFLOW_DB cleanup skipped" /CTRLFW/FDP/dev/logs/House_Keeping/2026_10_22/ | grep -v "+ echo\|+ loginfo"
+clear; cat /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/after_exec.txt
+
 grep -c "23 Oct 2026" /var/spool/mail/g.fdpdev.001.dev
 mailq | tail -20
 grep -n "^Subject:\|^From:\|^To:\|^Date:" /var/spool/mail/g.fdpdev.001.dev | tail -12
