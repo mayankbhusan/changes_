@@ -1,3 +1,67 @@
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+CFG=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion/ebbs_ingestion_config.csv
+TS=$(date +%Y%m%d%H%M)
+cp "$D/acct_dependency_config.json" "$D/acct_dependency_config.json.bak_$TS"
+cp "$D/prty_dependency_config.json" "$D/prty_dependency_config.json.bak_$TS"
+
+python3 - "$D" "$CFG" <<'EOF'
+import re, sys, json
+d, cfg = sys.argv[1], sys.argv[2]
+keys = {l.split('|')[0].strip() for l in open(cfg)}
+
+# 1) acct: remove the extra MY_ from the 9 wrong names
+p = d + '/acct_dependency_config.json'
+s = open(p).read()
+pat = re.compile(r'EBBS_MY_EBBS_MY_(ACCINFO|ACINTHIS|ACODINFO|EXCRTL|INTCURR|INTDTL|INTPL|MLTMAST|REASON)(?=[,"])')
+s, n = pat.subn(r'EBBS_MY_EBBS_\1', s)
+json.loads(s)
+open(p, 'w').write(s)
+print('acct: replaced', n, 'names')
+
+# 2) prty: add PRTY-EBBS-MAST_EGLEX_MY block before PRTY-EBBS-REL_EGLEX_ID
+p = d + '/prty_dependency_config.json'
+s = open(p).read()
+if '"PRTY-EBBS-MAST_EGLEX_MY"' in s:
+    print('prty: MY block already exists, not added')
+else:
+    mast = 'EBBS_DF_MY_EBBS_MAST' if 'EBBS_DF_MY_EBBS_MAST' in keys else 'EBBS_MY_EBBS_MAST'
+    deps = ','.join([mast, 'EBBS_MY_EBBS_SEG', 'EBBS_MY_EBBS_INSTCLS', 'EBBS_MY_EBBS_ARM',
+                     'EBBS_MY_EBBS_MSTINFO', 'ALT_PRTY', 'ALT_PRTY-SCI-LSPSYSXREF', 'M_SCB_ENTITY_XLATE'])
+    block = ('        "PRTY-EBBS-MAST_EGLEX_MY": {\n'
+             '            "dependencies":\n'
+             '            "' + deps + '",\n'
+             '            "partition_details": "ods_val=${ods_val_param};country_val=MY;tp_sys_val=EBBS;process_id_val=PRTY-EBBS-MAST_EGLEX_ALL"\n'
+             '        },\n')
+    marker = '"PRTY-EBBS-REL_EGLEX_ID": {'
+    assert s.count(marker) == 1, 'marker not unique'
+    ls = s.rfind('\n', 0, s.index(marker)) + 1
+    s = s[:ls] + block + s[ls:]
+    json.loads(s)
+    open(p, 'w').write(s)
+    print('prty: added MY block using', mast)
+
+# 3) verify both blocks against the CSV
+def find(o, k):
+    if isinstance(o, dict):
+        if k in o: return o[k]
+        for v in o.values():
+            r = find(v, k)
+            if r: return r
+for f, k in [('acct_dependency_config.json', 'ACCT-EBBS-ACCOUNT_EGLEX_MY'),
+             ('prty_dependency_config.json', 'PRTY-EBBS-MAST_EGLEX_MY')]:
+    blk = find(json.load(open(d + '/' + f)), k)
+    miss = [x.strip() for x in blk['dependencies'].split(',') if x.strip() not in keys]
+    print(k, '-> not in EBBS CSV:', miss)
+EOF
+
+
+
+
+
+
+
+
+
 "EBBS_DF_MY_EBBS_ACCOUNT,EBBS_MY_EBBS_EXCRTL,EBBS_MY_EBBS_INTPL,EBBS_MY_EBBS_INTPLDT,EBBS_MY_EBBS_INTCURR,EBBS_MY_EBBS_ACINTHIS,EBBS_MY_EBBS_INTDTL,EBBS_MY_EBBS_BRN,EBBS_MY_EBBS_ACCINFO,EBBS_MY_EBBS_MLTMAST,EBBS_DF_MY_EBBS_PRVINFO,M_PRODUCT_XLATE,EBBS_DF_MY_EBBS_PRD,EBBS_MY_EBBS_REASON,EBBS_MY_EBBS_ACODINFO,M_CDL_GLBU_TO_ENTCD_BKCD_XLATE,M_SCB_ENTITY_XLATE,M_SCI_XREF_XLATE,PRTY-SCI-SUBPROF,ALT_PRTY-SCI-LSPSYSXREF",
 
 
