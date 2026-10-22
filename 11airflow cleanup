@@ -1,4 +1,43 @@
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
+F=$D/acct_lmt_rltd_dependency_config.json
+cp "$F" "$F.bak_$(date +%Y%m%d%H%M)"
+
+# 1) fix the two key names (exact quoted match, safe to rerun)
+sed -i 's/"ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_MY"/"ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_EGLEX_MY"/; s/"ACCT_LMT_RLTD-EBBS-ACTVT-DEAL-LMTLNDT_MY"/"ACCT_LMT_RLTD-EBBS-ACTVT-DEAL-LMTLNDT_EGLEX_MY"/' "$F"
+
+# 2) check every dependency of PE_BAL-EBBS-FPSLBS_EGLEX_MY exists as a key somewhere
+python3 - "$D" "$ING" <<'EOF'
+import json, glob, sys, difflib
+d, ing = sys.argv[1:3]
+keys, blk = set(), None
+def walk(o):
+    global blk
+    if isinstance(o, dict):
+        for k, v in o.items():
+            keys.add(k)
+            if k == 'PE_BAL-EBBS-FPSLBS_EGLEX_MY': blk = v
+            walk(v)
+for f in glob.glob(d + '/*_dependency_config.json'):
+    try: walk(json.load(open(f)))
+    except Exception as e: print('BAD JSON:', f, e)
+for f in glob.glob(ing + '/*.csv'):
+    for l in open(f): keys.add(l.split('|')[0].strip())
+deps = [x.strip() for x in blk['dependencies'].split(',')]
+miss = [x for x in deps if x not in keys]
+print('checked', len(deps), 'dependencies; missing:', len(miss))
+for m in miss:
+    print('  MISSING', m, '-> closest:', difflib.get_close_matches(m, keys, 3, 0.8))
+EOF
+
+# 3) confirm the process ids of the two fixed blocks
+grep -A3 -E '"ACCT_LMT_RLTD-EBBS-ACTVT-(ACC|DEAL)-LMTLNDT_EGLEX_MY"' "$F" | grep -E 'EGLEX_MY|process_id_val'
+
+
+
+
+
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 CFG=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion/ebbs_ingestion_config.csv
 TS=$(date +%Y%m%d%H%M)
 cp "$D/acct_dependency_config.json" "$D/acct_dependency_config.json.bak_$TS"
