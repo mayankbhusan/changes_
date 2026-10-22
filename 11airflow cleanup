@@ -1,4 +1,20 @@
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+grep -c '"ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_EGLEX_MY"' $D/acct_lmt_rltd_dependency_config.json
+grep -c '"ACCT-EBBS-PMMKDEAL_EGLEX_MY"' $D/acct_dependency_config.json
+grep -c '"PRVSN-EBBS-CHOFF_EGLEX_MY"' $D/prvsn_dependency_config.json
+grep -c '"PRTY-EBBS-MAST_EGLEX_MY"' $D/prty_dependency_config.json
+grep -c 'EBBS_MY_EBBS_MY_ACCINFO' $D/acct_dependency_config.json
+airflow dags list-import-errors 2>/dev/null | grep -i keyerror
+
+A=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dags
+grep -n "ingestion_table_name_to_id_dict" $A/fdp_products_dag_testxyz.py | head -20
+sed -n '215,232p' $A/fdp_products_dag_testxyz.py
+
+
+
+
+
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
 TS=$(date +%Y%m%d%H%M)
 cp $D/acct_dependency_config.json $D/acct_dependency_config.json.bak2_$TS
