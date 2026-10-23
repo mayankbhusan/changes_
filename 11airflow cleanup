@@ -1,4 +1,61 @@
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
+cat > /tmp/df_fix.py <<'EOF'
+import sys, re, glob, json
+D, ING, mode = sys.argv[1:4]
+KEYS = [
+ "ACCT_LMT_RLTD-EBBS-ACTVT-ACC-LMTLNDT_EGLEX_MY",
+ "ACCT_LMT_RLTD-EBBS-ACTVT-DEAL-LMTLNDT_EGLEX_MY",
+ "ACCT-EBBS-ACCOUNT_EGLEX_MY",
+ "ACCT-EBBS-PMMKDEAL_EGLEX_MY",
+ "PRTY-EBBS-MAST_EGLEX_MY",
+ "PRVSN-EBBS-CHOFF_EGLEX_MY",
+ "PRTY_RTNG-EBBS-MASTCRG_EGLEX_MY",
+ "SUB_LDGR-EBBS-FPSLBS_EGLEX_MY",
+ "PE_BAL-EBBS-FPSLBS_EGLEX_MY",
+]
+csv = set()
+for f in glob.glob(ING + '/*ingestion_config.csv'):
+    for l in open(f, errors='replace'):
+        csv.add(l.split('|')[0].strip())
+def nodup(pairs):
+    ks = [k for k, _ in pairs]
+    d = sorted(set(k for k in ks if ks.count(k) > 1))
+    if d: raise ValueError('duplicate keys: %s' % d)
+    return dict(pairs)
+PLAIN = re.compile(r'(?<![A-Za-z0-9_])EBBS_MY_EBBS_(\w+)')
+for f in sorted(glob.glob(D + '/*_dependency_config.json')):
+    txt = new = open(f).read()
+    shown = []
+    for k in KEYS:
+        pat = re.compile(r'("' + re.escape(k) + r'"\s*:\s*\{\s*"dependencies"\s*:\s*")([^"]*)(")')
+        m = pat.search(new)
+        if not m: continue
+        def sw(mm):
+            t = mm.group(1)
+            if 'EBBS_DF_MY_EBBS_' + t in csv:
+                print('  SWAP  %-48s EBBS_MY_EBBS_%s -> EBBS_DF_MY_EBBS_%s' % (k, t, t))
+                return 'EBBS_DF_MY_EBBS_' + t
+            print('  KEEP  %-48s EBBS_MY_EBBS_%s (no DF version in CSV)' % (k, t))
+            return mm.group(0)
+        deps = PLAIN.sub(sw, m.group(2))
+        new = new[:m.start(2)] + deps + new[m.end(2):]
+        shown.append(k)
+    if shown:
+        print(f.split('/')[-1], '->', len(shown), 'block(s) checked')
+    if new != txt and mode == 'apply':
+        json.loads(new, object_pairs_hook=nodup)   # raises if invalid / duplicate keys
+        open(f, 'w').write(new)
+        print('  WRITTEN', f.split('/')[-1])
+print('mode:', mode)
+EOF
+python3 /tmp/df_fix.py "$D" "$ING" dry
+
+
+
+
+
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 grep -A1 -E '"ACCT_LMT_RLTD-EBBS-ACTVT-(ACC|DEAL)-LMTLNDT_(EGLEX_[A-Z]{2}|MY)"' $D/acct_lmt_rltd_dependency_config.json | grep -v '^--' | cut -c1-200
 
 
