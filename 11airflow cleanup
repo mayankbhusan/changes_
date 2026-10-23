@@ -1,4 +1,8 @@
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+grep -A1 -E '"ACCT_LMT_RLTD-EBBS-ACTVT-(ACC|DEAL)-LMTLNDT_(EGLEX_[A-Z]{2}|MY)"' $D/acct_lmt_rltd_dependency_config.json | grep -v '^--' | cut -c1-200
+
+
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
 python3 - "$D" "$ING" <<'EOF'
 import sys, re, json, glob
