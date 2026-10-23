@@ -1,3 +1,83 @@
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
+python3 - "$D" "$ING" <<'EOF'
+import sys, re, json, glob
+D, ING = sys.argv[1:3]
+P = 'ACCT_LMT_RLTD-EBBS-ACTVT-'
+def dup(pairs):
+    seen = set()
+    for k, _ in pairs:
+        if k in seen: raise ValueError('duplicate key ' + k)
+        seen.add(k)
+    return dict(pairs)
+csv = set()
+for f in glob.glob(ING + '/*ingestion_config.csv'):
+    for l in open(f, errors='replace'): csv.add(l.split('|')[0].strip())
+def mb(t, i):
+    d = 0
+    for j in range(i, len(t)):
+        if t[j] == '{': d += 1
+        elif t[j] == '}':
+            d -= 1
+            if d == 0: return j
+def conv(x):
+    m = re.fullmatch(r'EBBS_ID_EBBS_ID_(\w+)', x)
+    if m: return 'EBBS_MY_EBBS_' + m.group(1)
+    m = re.fullmatch(r'EBBS_DF_ID_EBBS_(\w+)', x)
+    if m:
+        c = 'EBBS_DF_MY_EBBS_' + m.group(1)
+        return c if c in csv else 'EBBS_MY_EBBS_' + m.group(1)
+    return x
+# 1) acct_lmt_rltd: add the two _EGLEX_MY blocks, mirrored from the _EGLEX_ID blocks
+p = D + '/acct_lmt_rltd_dependency_config.json'; s = open(p).read()
+last = re.search(r'^([ \t]*)"%sDEAL-LMTLNDT_MY"\s*:\s*\{' % re.escape(P), s, re.M)
+ind = last.group(1); lend = mb(s, last.end() - 1)
+inner = re.search(r'\n([ \t]*)"dependencies"', s[last.start():lend]).group(1)
+blocks = []
+for part in ('ACC', 'DEAL'):
+    base = P + part + '-LMTLNDT'
+    if '"%s_EGLEX_MY"' % base in s: print(part, '_EGLEX_MY already present, skipped'); continue
+    m = re.search(r'^[ \t]*"%s_EGLEX_ID"\s*:\s*\{' % re.escape(base), s, re.M)
+    blk = s[m.start():mb(s, m.end() - 1) + 1]
+    deps = [conv(x.strip()) for x in re.search(r'"dependencies"\s*:\s*"([^"]*)"', blk).group(1).split(',')]
+    bad = [x for x in deps if x.startswith('EBBS_') and x not in csv]
+    if bad: sys.exit('ABORT: not in ingestion CSV: %s' % bad)
+    part_d = re.search(r'"partition_details"\s*:\s*"([^"]*)"', blk).group(1).replace('country_val=ID', 'country_val=MY')
+    blocks.append('%s"%s_EGLEX_MY": {\n%s"dependencies": "%s",\n%s"partition_details": "%s"\n%s}' % (ind, base, inner, ','.join(deps), inner, part_d, ind))
+if blocks:
+    s = s[:lend + 1] + ',\n' + ',\n'.join(blocks) + s[lend + 1:]
+json.loads(s, object_pairs_hook=dup); open(p, 'w').write(s)
+print('acct_lmt_rltd: blocks added:', len(blocks), '| JSON valid')
+if blocks: print('--- paste into ADO after the DEAL ..._MY block (note the comma after its closing brace):\n,\n' + ',\n'.join(blocks) + '\n---')
+# 2) pe_bal: MY block lists all four references (Excel row 5 order)
+p = D + '/pe_bal_dependency_config.json'; s = open(p).read()
+m = re.search(r'"PE_BAL-EBBS-FPSLBS_EGLEX_MY"\s*:\s*\{', s); e = mb(s, m.end() - 1)
+blk = s[m.start():e + 1]; dm = re.search(r'("dependencies"\s*:\s*")([^"]*)(")', blk)
+toks = [t.strip() for t in dm.group(2).split(',') if t.strip()]
+pat = re.compile(re.escape(P) + r'(ACC|DEAL)-LMTLNDT(_EGLEX_MY|_MY)?$')
+toks = [t for t in toks if not pat.match(t)]
+four = [P + 'ACC-LMTLNDT_EGLEX_MY', P + 'DEAL-LMTLNDT_EGLEX_MY', P + 'ACC-LMTLNDT_MY', P + 'DEAL-LMTLNDT_MY']
+i = toks.index('ACCT_LMT_RLTD') + 1 if 'ACCT_LMT_RLTD' in toks else len(toks)
+toks[i:i] = four
+blk = blk[:dm.start(2)] + ','.join(toks) + blk[dm.end(2):]
+s = s[:m.start()] + blk + s[e + 1:]
+json.loads(s, object_pairs_hook=dup); open(p, 'w').write(s)
+print('pe_bal: MY list now has', len(toks), 'entries | JSON valid')
+# 3) every reference resolves
+keys = set()
+def walk(o):
+    if isinstance(o, dict):
+        for k, v in o.items(): keys.add(k); walk(v)
+for f in glob.glob(D + '/*_dependency_config.json'): walk(json.load(open(f)))
+print('missing keys:', [x for x in four if x not in keys] or 'none')
+EOF
+
+
+
+
+
+
+
 clear; LOGDIR=/CTRLFW/FDP/dev/logs/House_Keeping/2026_10_23; grep -rh "INFO : AIRFLOW_DB\|ALERT\|VACUUM ANALYZE done\|cutoff=" $LOGDIR | grep -v "+ echo\|+ loginfo"; mailq 2>/dev/null | tail -1; grep -n "db_cleanup" /CTRLFW/FDP/dev/housekeeping/config/housekeeping.cfg
 clear; grep -rh "AIRFLOW_DB cleanup skipped" /CTRLFW/FDP/dev/logs/House_Keeping/2026_10_22/ | grep -v "+ echo\|+ loginfo"
 clear; cat /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/after_exec.txt
