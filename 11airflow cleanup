@@ -1,3 +1,66 @@
+#!/usr/bin/env python3
+# audit.py - read-only: are all rows/dependencies of the BA Excel present in the product configs?
+# usage: python3 audit.py "<excel>.xlsx" [--sheet PR] [--product-dir D] [--ingestion-dir I]
+from __future__ import print_function
+import argparse, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import dep_tool as T
+
+def norm(x):                       # EBBS_DF_MY_EBBS_X and EBBS_MY_EBBS_X are the same table
+    return re.sub(r'^([A-Z0-9]+)_DF_', r'\1_', x)
+
+def main():
+    a = argparse.ArgumentParser()
+    a.add_argument('xlsx'); a.add_argument('--sheet', default='PR')
+    a.add_argument('--product-dir', default=T.DEF_PRODUCT_DIR)
+    a.add_argument('--ingestion-dir', default=T.DEF_ING_DIR)
+    a = a.parse_args()
+    ctx = T.Ctx(a.product_dir, a.ingestion_dir)
+    plans = T.plan_rows(ctx, T.load_sheet_rows(a.xlsx, a.sheet), None)
+    bad = 0
+    for p in plans:
+        text = ctx.files.get(p['fname'], '')
+        blks = [b for b in T.scan_blocks(text) if b['key'] == p['key']]
+        print('Row %d  %s' % (p['row'], p['key']))
+        if len(blks) != 1:
+            print('    FAIL   block found %d times in %s' % (len(blks), p['fname'])); bad += 1; print(); continue
+        bt = text[blks[0]['start']:blks[0]['end'] + 1]
+        have = [x.strip() for x in T.dep_string(bt).split(',') if x.strip()]
+        hn = set(norm(x) for x in have)
+        pid = re.search(r'process_id_val=([^";]*)', bt); cty = re.search(r'country_val=([^;"]*)', bt)
+        ok = True
+        if not pid or pid.group(1) != p['pid']:
+            print('    FAIL   process_id_val is %s, sheet says %s' % (pid and pid.group(1), p['pid'])); ok = False
+        if not cty or cty.group(1) != p['cc']:
+            print('    FAIL   country_val is %s, sheet says %s' % (cty and cty.group(1), p['cc'])); ok = False
+        for t in p['tokens']:
+            if norm(t['value']) not in hn:
+                print('    FAIL   dependency missing: %s   (sheet: %s)' % (t['value'], t['src'])); ok = False
+        for h in have:      # every dependency in the file must resolve for the DAG
+            checkable = h.startswith('EBBS_') or h.endswith('_' + p['cc'])   # ingestion tables / country services
+            if checkable and h not in ctx.ing_keys and h not in ctx.prod_keys:
+                print('    FAIL   not resolvable (DAG KeyError): %s' % h); ok = False
+        if '_EGLEX_' in p['key']:
+            for h in have:
+                m = re.fullmatch(r'([A-Z0-9]+)_([A-Z]{2})_(\1)_(\w+)', h)
+                if m and '%s_DF_%s_%s_%s' % (m.group(1), m.group(2), m.group(1), m.group(4)) in ctx.ing_keys:
+                    print('    FAIL   EGLEX block uses plain %s but a DF version exists' % h); ok = False
+        extra = [h for h in have if norm(h) not in set(norm(t['value']) for t in p['tokens'])]
+        if extra:
+            print('    INFO   in file, not in sheet row: ' + ', '.join(extra))
+        print('    OK' if ok else '    ^^ problems above'); bad += 0 if ok else 1; print()
+    print('rows: %d   rows with problems: %d' % (len(plans), bad))
+if __name__ == '__main__':
+    main()
+
+
+
+
+
+
+
+
+
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 ING=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dag_config/ingestion
 cat > /tmp/df_fix.py <<'EOF'
