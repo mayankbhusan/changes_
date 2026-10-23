@@ -1,3 +1,10 @@
+P=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+grep -c '"ACCT-EBBS-ACCOUNT": {' $P/acct_dependency_config.json; grep -c '"ACCT-EBBS-PMMKDEAL": {' $P/acct_dependency_config.json
+
+
+grep -n "EGLEX_MY\": {" -A1 $P/acct_lmt_rltd_dependency_config.json | grep -c EBBS_DF_MY_EBBS_LMTLNDT
+
+
 grep -c '"ACCT-EBBS-ACCOUNT": {' $D/acct_dependency_config.json; grep -c '"ACCT-EBBS-PMMKDEAL": {' $D/acct_dependency_config.json
 
 
