@@ -1,3 +1,10 @@
+grep -c '"ACCT-EBBS-ACCOUNT": {' $D/acct_dependency_config.json; grep -c '"ACCT-EBBS-PMMKDEAL": {' $D/acct_dependency_config.json
+
+
+
+
+
+
 #!/usr/bin/env python3
 # audit.py - read-only: are all rows/dependencies of the BA Excel present in the product configs?
 # usage: python3 audit.py "<excel>.xlsx" [--sheet PR] [--product-dir D] [--ingestion-dir I]
