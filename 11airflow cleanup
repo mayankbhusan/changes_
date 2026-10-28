@@ -1,3 +1,18 @@
+echo "current AIRFLOW_HOME=$AIRFLOW_HOME"
+env | grep -i "^AIRFLOW" | cut -d= -f1
+ps -ef | grep -i "airflow" | grep -i uat | grep -v grep | head -5
+find /CTRLFW/FDP/uat -maxdepth 3 -name airflow.cfg 2>/dev/null
+
+cat /proc/<PID>/environ | tr '\0' '\n' | grep -i "^AIRFLOW_HOME\|^AIRFLOW__DATABASE" | cut -d= -f1
+cat /proc/<PID>/environ | tr '\0' '\n' | grep -i "^AIRFLOW_HOME="
+
+export AIRFLOW_HOME=<uat airflow home path>
+/CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"
+
+
+
+
+
 cat > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/db_check_uat.py <<'EOF'
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import text
