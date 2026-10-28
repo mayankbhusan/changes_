@@ -1,3 +1,43 @@
+cat > /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/db_check_uat.py <<'EOF'
+from datetime import datetime, timedelta, timezone
+from sqlalchemy import text
+from airflow import settings
+from airflow.utils.db_cleanup import config_dict
+
+TABLES = ["dag_run","dataset_event","import_error","job","log","session","sla_miss",
+          "task_fail","task_instance","task_instance_history","task_reschedule",
+          "trigger","xcom","callback_request"]
+now = datetime.now(timezone.utc)
+cutoff = now - timedelta(days=180)
+print("RUN TIME (UTC):", now.isoformat())
+print("CUTOFF (180d) :", cutoff.isoformat())
+print("%-24s %-14s %10s %12s %9s %9s %10s  %s" % ("table","date_column","total","older_180d","live_tup","dead_tup","size","last_vacuum"))
+with settings.engine.connect() as c:
+    for t in TABLES:
+        cfg = config_dict[t]
+        col = getattr(cfg, "recency_column_name", None) or cfg.recency_column.key
+        total = c.execute(text('SELECT count(*) FROM "%s"' % t)).scalar()
+        old = c.execute(text('SELECT count(*) FROM "%s" WHERE "%s" < :c' % (t, col)), {"c": cutoff}).scalar()
+        st = c.execute(text("SELECT n_live_tup, n_dead_tup, last_vacuum, last_analyze FROM pg_stat_user_tables WHERE relname=:t"), {"t": t}).first()
+        size = c.execute(text("SELECT pg_size_pretty(pg_total_relation_size(CAST(:t AS regclass)))"), {"t": '"%s"' % t}).scalar()
+        print("%-24s %-14s %10s %12s %9s %9s %10s  %s" % (t, col, total, old, st[0] if st else "-", st[1] if st else "-", size, (st[2] or st[3]) if st else "-"))
+    arch = c.execute(text("SELECT count(*) FROM information_schema.tables WHERE table_name LIKE '%airflow_deleted%'")).scalar()
+    print("archive tables (_airflow_deleted__*):", arch)
+EOF
+
+/CTRLFW/FDP/dev/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python /CTRLFW/FDP/dev/ingestion/scripts/test_mayank/AIRFLOW_DELETE/db_check_uat.py
+
+/CTRLFW/FDP/dev/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"
+/CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"
+ps -ef | grep -i "airflow" | grep -i uat | grep -v grep | head
+
+
+
+
+
+
+
+
 grep -n "EGLEX_MY\": {" -A1 $D/acct_lmt_rltd_dependency_config.json | grep EBBS_ACTVT -A1 | grep dependencies
 
 
