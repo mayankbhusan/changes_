@@ -1,3 +1,8 @@
+grep -n "AIRFLOW_DB\|db_cleanup" /CTRLFW/FDP/uat/housekeeping/housekeeping.sh
+grep -n "db_cleanup" /CTRLFW/FDP/uat/housekeeping/config/housekeeping.cfg
+
+
+
 export AIRFLOW_HOME=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home; unset AIRFLOW__DATABASE__SQL_ALCHEMY_CONN; env | grep -i airflow; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python ~/uat_dbtest/db_check.py | tee ~/uat_dbtest/pre_run.txt
 grep -n "dag_id\|UAT_cleanup\|housekeeping_commands\|bash_command" /CTRLFW/FDP/uat/tools_v2/executables/airflow_home/dags/fdp_housekeeping_dag.py
 
