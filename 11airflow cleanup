@@ -1,4 +1,6 @@
 export AIRFLOW_HOME=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home; echo "AIRFLOW_HOME=$AIRFLOW_HOME"; env | grep -i airflow; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"
+export AIRFLOW_HOME=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home; unset AIRFLOW__DATABASE__SQL_ALCHEMY_CONN; env | grep -i airflow; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"
+grep -i sql_alchemy_conn /CTRLFW/FDP/uat/tools_v2/executables/airflow_home/airflow.cfg
 
 
 
