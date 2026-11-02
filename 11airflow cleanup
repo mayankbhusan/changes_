@@ -1,3 +1,8 @@
+export AIRFLOW_HOME=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home
+echo "AIRFLOW_HOME=$AIRFLOW_HOME"
+/CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"
+
+
 
 step 0:
 grep -n "db_cleanup" /CTRLFW/FDP/uat/housekeeping/config/housekeeping.cfg
