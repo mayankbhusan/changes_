@@ -1,3 +1,6 @@
+echo "=== UAT housekeeping.sh lines 1-25 ==="; sed -n '1,25p' /CTRLFW/FDP/uat/housekeeping/housekeeping.sh; echo "=== find fdp_usage_params.env under UAT ==="; find /CTRLFW/FDP/uat -name "fdp_usage_params.env" 2>/dev/null; echo "=== DEV housekeeping.sh lines 1-25 ==="; sed -n '1,25p' /CTRLFW/FDP/dev/housekeeping/housekeeping.sh; echo "=== find fdp_usage_params.env under DEV ==="; find /CTRLFW/FDP/dev -name "fdp_usage_params.env" 2>/dev/null
+
+
 grep -n "AIRFLOW_DB\|db_cleanup" /CTRLFW/FDP/uat/housekeeping/housekeeping.sh
 grep -n "db_cleanup" /CTRLFW/FDP/uat/housekeeping/config/housekeeping.cfg
 
