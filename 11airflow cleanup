@@ -1,3 +1,6 @@
+export AIRFLOW_HOME=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home; unset AIRFLOW__DATABASE__SQL_ALCHEMY_CONN; echo "=== Confirming UAT connection ==="; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"; echo "=== Regenerating post_run.txt ==="; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python ~/uat_dbtest/db_check.py | tee ~/uat_dbtest/post_run.txt; echo "=== Diff vs pre_run.txt ==="; diff ~/uat_dbtest/pre_run.txt ~/uat_dbtest/post_run.txt
+
+
 echo "AIRFLOW_HOME=$AIRFLOW_HOME"; env | grep -i airflow; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"
 /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python ~/uat_dbtest/db_check.py | tee ~/uat_dbtest/post_run.txt; diff ~/uat_dbtest/pre_run.txt ~/uat_dbtest/post_run.txt
 
