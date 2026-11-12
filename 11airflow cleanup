@@ -1,3 +1,6 @@
+echo "=== prd1 files ==="; ls -la /CTRLFW/FDP/prd1/housekeeping/ /CTRLFW/FDP/prd1/config/fdp_usage_params.env; echo "=== db_cleanup cfg row, uat vs prd1 ==="; grep -rn "db_cleanup" /CTRLFW/FDP/uat/housekeeping /CTRLFW/FDP/prd1/housekeeping; echo "=== AIRFLOW_DB lines in script, uat vs prd1 ==="; grep -c AIRFLOW_DB /CTRLFW/FDP/uat/housekeeping/housekeeping.sh /CTRLFW/FDP/prd1/housekeeping/housekeeping.sh; echo "=== script diff: UAT (<) vs prd1 (>) ==="; diff --strip-trailing-cr /CTRLFW/FDP/uat/housekeeping/housekeeping.sh /CTRLFW/FDP/prd1/housekeeping/housekeeping.sh
+
+
 export AIRFLOW_HOME=/CTRLFW/FDP/uat/tools_v2/executables/airflow_home; unset AIRFLOW__DATABASE__SQL_ALCHEMY_CONN; echo "=== Confirming UAT connection ==="; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python -c "from airflow import settings; print(settings.engine.url.render_as_string(hide_password=True))"; echo "=== Regenerating post_run.txt ==="; /CTRLFW/FDP/uat/tools_v2/goldenversions/goldenversions/python-3.9.5/bin/python ~/uat_dbtest/db_check.py | tee ~/uat_dbtest/post_run.txt; echo "=== Diff vs pre_run.txt ==="; diff ~/uat_dbtest/pre_run.txt ~/uat_dbtest/post_run.txt
 
 
