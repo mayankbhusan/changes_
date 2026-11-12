@@ -1,3 +1,6 @@
+head -2 ~/prd1_dbtest/pre_run.txt; ls -l --time-style=long-iso ~/diff ~/prd1_dbtest/
+
+
 grep -n db_cleanup /CTRLFW/FDP/prd1/housekeeping/config/housekeeping.cfg; wc -l /CTRLFW/FDP/prd1/housekeeping/config/housekeeping.cfg; ls -l --time-style=long-iso /CTRLFW/FDP/prd1/housekeeping/config/ /CTRLFW/FDP/prd1/housekeeping/housekeeping.sh; sed -n '18,20p' /CTRLFW/FDP/prd1/housekeeping/housekeeping.sh
 
 
