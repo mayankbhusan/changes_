@@ -1,3 +1,9 @@
+D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
+grep -c "_EGLEX_FK" $D/*_dependency_config.json | grep -v ":0"
+find /CTRLFW/FDP -name "acct_dependency_config.json" -not -path "*/dag_config_uat_refresh/*" 2>/dev/null | head
+
+
+
 cat > devcmp.py <<'EOF'
 import sys, re, glob
 notes, prod = sys.argv[1:3]
