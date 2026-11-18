@@ -1,3 +1,21 @@
+python3 - <<'EOF'
+import json
+D="/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product"
+for f in ["acct","acct_bal","prty","prty_rtng","acct_lmt_rltd","actvt_lmt","prvsn","sub_ldgr","pe_bal"]:
+    p="%s/%s_dependency_config.json"%(D,f)
+    t=open(p,'rb').read().decode('utf-8')
+    try:
+        json.loads(t); print("OK  ",f)
+    except json.JSONDecodeError as e:
+        print("FAIL",f,"-",e)
+        L=t.split("\n")
+        for i in range(max(0,e.lineno-6),min(len(L),e.lineno+2)):
+            print("   %5d: %s"%(i+1,L[i].rstrip()))
+EOF
+
+
+
+
 D=/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product
 grep -c "_EGLEX_FK" $D/*_dependency_config.json | grep -v ":0"
 find /CTRLFW/FDP -name "acct_dependency_config.json" -not -path "*/dag_config_uat_refresh/*" 2>/dev/null | head
