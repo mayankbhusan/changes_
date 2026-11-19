@@ -1,3 +1,70 @@
+mkdir -p /CTRLFW/FDP/dev/daas/pyspark_scripts/test_mayank; cp /CTRLFW/FDP/dev/daas/pyspark_scripts/fdp_daas_new_version.py /CTRLFW/FDP/dev/daas/pyspark_scripts/test_mayank/
+
+        if country_for_recon is None or not str(country_for_recon).strip():
+            logger.info("Skipping recon (ACK) file creation for blank/null country code: {!r}".format(country_for_recon))
+            return True
+
+
+cd /CTRLFW/FDP/dev/daas/pyspark_scripts/test_mayank; dos2unix test_guard.py fdp_daas_new_version.py; python3 test_guard.py fdp_daas_new_version.py; echo exit=$?
+
+import sys, logging, tempfile, shutil
+from types import SimpleNamespace as NS
+
+L = open(sys.argv[1]).read().splitlines()
+s = [i for i, l in enumerate(L) if l.startswith("def write_to_recon(")][0]
+e = next((j for j in range(s + 1, len(L)) if L[j] and not L[j][0].isspace() and not L[j].startswith("#")), len(L))
+src = "\n".join(L[s:e]) + "\n"
+
+
+class P:
+    def __init__(self, *a, **k):
+        pass
+
+    def communicate(self):
+        return ("", "")
+
+
+sp = NS(PIPE=-1, Popen=P)
+
+
+def run(country, push_ok):
+    tmp = tempfile.mkdtemp()
+    pushed, failed = [], []
+    ns = dict(args=NS(product_name_upper="PRTY", partition_vars="a=1;b=2;tp=ACBS;pid=123", ods="2026-11-17"),
+              logger=logging.getLogger("t"), filepath=tmp, hdfspath="/h/", recon_path="recon/", hadoop_mkdir="echo ",
+              sp=sp, failed_countries=failed, push_recon_hdfs_check=lambda c, p: pushed.append(p) or push_ok)
+    exec(src, ns)
+    try:
+        return ns["write_to_recon"](country, 0), pushed, failed
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+bad = 0
+
+
+def check(name, ok):
+    global bad
+    print(("PASS " if ok else "FAIL ") + name)
+    bad += (not ok)
+
+
+for c in ("", None, "   "):
+    r, p, f = run(c, False)
+    check("blank %r: skipped, no HDFS push, not in failed list" % (c,), r is True and not p and not f)
+r, p, f = run("AE", True)
+check("AE ok: pushed once to PRTY_AE_ACBS_123.txt", r is True and len(p) == 1 and p[0].endswith("PRTY_AE_ACBS_123.txt") and not f)
+r, p, f = run("AE", False)
+check("AE push fails: still reported as failed", r is False and f == ["AE"])
+sys.exit(1 if bad else 0)
+
+
+grep -n 'nas_base_path *=' /CTRLFW/FDP/dev/daas/pyspark_scripts/fdp_daas_new_version.py | cut -c1-150; for e in dev prd1 uat; do echo "== $e"; head -1 /CTRLFW/FDP/$e/daas/pyspark_scripts/tp_to_country_config.csv | cat -A | cut -c1-200; grep -n -i acbs /CTRLFW/FDP/$e/daas/pyspark_scripts/tp_to_country_config.csv | cat -A | cut -c1-300; done
+
+
+
+
+
 F=/CTRLFW/FDP/dev/daas/pyspark_scripts/fdp_daas_new_version.py; grep -n -E 'failed_countries|send_alert_email|create_ack_file|push_recon_hdfs_check|hdfs_recon_status|country_str|distinct_dynamic_parts_list' "$F" | cut -c1-170 | head -70
 awk 'NR>=1412&&NR<=1450 || NR>=1760&&NR<=1799 {print NR": "$0}' "$F" | cut -c1-180
 
