@@ -1,3 +1,8 @@
+ls -l /CTRLFW/FDP/{dev,prd1,uat}/daas/pyspark_scripts/fdp_daas_new_version*; md5sum /CTRLFW/FDP/{dev,prd1,uat}/daas/pyspark_scripts/fdp_daas_new_version*
+E=dev; L=$(grep -rIl --include='*.py' --include='*.sh' -i 'ack file generation' /CTRLFW/FDP/$E/daas /CTRLFW/FDP/$E/utils 2>/dev/null); echo "$L"; F=$(echo "$L" | head -1); ls -l "$F"; wc -l "$F"; ls -l /CTRLFW/FDP/$E/daas/pyspark_scripts | grep -i daas_new
+
+
+
 python3 - <<'EOF'
 import json
 D="/CTRLFW/FDP/dev/tools_v2/executables/airflow_home/dag_config_uat_refresh/product"
