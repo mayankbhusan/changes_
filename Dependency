@@ -4,6 +4,7 @@ mkdir -p /CTRLFW/FDP/dev/daas/pyspark_scripts/test_mayank; cp /CTRLFW/FDP/dev/da
             logger.info("Skipping recon (ACK) file creation for blank/null country code: {!r}".format(country_for_recon))
             return True
 
+cd /CTRLFW/FDP/dev/daas/pyspark_scripts/test_mayank; dos2unix test_guard.py fdp_daas_new_version.py; sed -n '1413,1418p' fdp_daas_new_version.py | cat -A | cut -c1-150; python3 test_guard.py fdp_daas_new_version.py; echo exit=$?
 
 cd /CTRLFW/FDP/dev/daas/pyspark_scripts/test_mayank; dos2unix test_guard.py fdp_daas_new_version.py; python3 test_guard.py fdp_daas_new_version.py; echo exit=$?
 
